@@ -7,6 +7,7 @@ from dssg.Machine import Machine
 
 # g_machine = None
 
+
 @app.route('/language', methods=['POST'])
 def detect_language():
     """Given some text, returns a ranked list of likey natural languages
@@ -71,7 +72,8 @@ def suggest_locations():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_entities(text)
-        # TODO: Should call guess_location instead, which returns locations / GPE only
+        # TODO: Should call guess_location instead, which returns locations /
+        # GPE only
     except:
         print "Failed to load json."
         g = {}
@@ -81,6 +83,7 @@ def suggest_locations():
     # TODO: Fix formatting of response text. Should return a ranked list
     # instead of dict
     return j
+
 
 @app.route('/entities', methods=['POST'])
 def extract_entities():
@@ -92,7 +95,8 @@ def extract_entities():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_entities(text)
-        # TODO: Should call guess_location instead, which returns locations / GPE only
+        # TODO: Should call guess_location instead, which returns locations /
+        # GPE only
     except:
         print "Failed to load json."
         g = {}
@@ -128,7 +132,8 @@ def suggest_sensitive_info():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_private_info(text)
-        # TODO: Should call guess_location instead, which returns locations / GPE only
+        # TODO: Should call guess_location instead, which returns locations /
+        # GPE only
     except:
         print "Failed to load json."
         g = {}
@@ -138,4 +143,3 @@ def suggest_sensitive_info():
     # TODO: Fix formatting of response text. Should return a ranked list
     # instead of dict
     return j
-

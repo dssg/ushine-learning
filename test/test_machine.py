@@ -23,14 +23,14 @@ def teardown():
 
 def test_canCreateMachine():
     mac = Machine()
-    assert (mac != None)
+    assert (mac is not None)
 
 
 def test_canGuessLanguage():
     mac = Machine()
     text = "Hello world this is definitely some English text"
     g = mac.guess_language(text)
-    assert (g != None)
+    assert (g is not None)
 
 
 def test_canGuessEntities():
@@ -38,7 +38,7 @@ def test_canGuessEntities():
     mac = Machine()
     text = "The United States is a country. Thomas Jefferson was a president. This is definitely Lower Wacker Drive."
     g = mac.guess_entities(text)
-    assert (g != None)
+    assert (g is not None)
 
 
 def test_canStripPrivateInfo():

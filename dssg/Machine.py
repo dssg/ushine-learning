@@ -148,7 +148,7 @@ class Machine(object):
         :return [(msgDict, {'c1': 4.6, 'c2': 4.2}), ...], list of pairs: message, dictionary of categories.
             The numbers returned range from (-inf, inf), but are ranks and cannot be interpreted beyond (e.g., as probabilites).
         """
-        assert (self._categoryClassifier != None)
+        assert (self._categoryClassifier is not None)
                 # TODO turn it into an exception
 
         messages = self._listify(messages)
@@ -291,7 +291,7 @@ class Machine(object):
         phone_regex = None
         if "phone_regex" in kwargs.keys():
             phone_regex = kwargs["phone_regex"]
-        
+
         return Machine._extract_entities(text) + Machine._extract_ids(text) + Machine._extract_usernames(text) + Machine._extract_emails(text) + Machine._extract_urls(text) + Machine._extract_phones(text, phone_regex)
 
     @staticmethod
@@ -372,9 +372,9 @@ class Machine(object):
         return emails_list
 
     @staticmethod
-    def _extract_phones(text, phone_regex = None):
+    def _extract_phones(text, phone_regex=None):
         # Returns phone numbers, using optional regex [tag: PHONE]
-        
+
         if not phone_regex:
             # default phone regex (United States)
             phone_regex = r'''(\b
@@ -384,7 +384,7 @@ class Machine(object):
                                 \D*         # optional separator
                                 \d{4}     # rest of number is 4 digits (e.g. '1212')
                                 )'''
-        
+
         phone_re = re.compile(phone_regex, re.VERBOSE)
         phone_list = [("PHONE", phone) for phone in phone_re.findall(text)]
         return phone_list
