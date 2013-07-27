@@ -1,4 +1,4 @@
-# https://pypi.python.org/pypi?name=WebHooksDemo&version=0.1&:action=display
+# https://pypi.python.org/pypi/ushine
 
 from setuptools import setup, find_packages
 readme = open('README.txt').read()
