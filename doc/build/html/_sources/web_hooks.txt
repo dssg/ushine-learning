@@ -1,0 +1,10 @@
+web_hooks Package
+=================
+
+:mod:`Machine` Module
+---------------------
+
+.. automodule:: dssg.Machine
+    :members:
+    :undoc-members:
+    :show-inheritance:

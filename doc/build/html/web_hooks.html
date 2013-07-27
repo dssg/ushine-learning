@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>web_hooks Package &mdash; WebHooksDemo 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WebHooksDemo 0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">WebHooksDemo 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="web-hooks-package">
+<h1>web_hooks Package<a class="headerlink" href="#web-hooks-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-dssg.Machine">
+<span id="machine-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">Machine</span></tt> Module<a class="headerlink" href="#module-dssg.Machine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dssg.Machine.Machine">
+<em class="property">class </em><tt class="descclassname">dssg.Machine.</tt><tt class="descname">Machine</tt><a class="headerlink" href="#dssg.Machine.Machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Base class for Machine Learning</p>
+<dl class="attribute">
+<dt id="dssg.Machine.Machine.categories">
+<tt class="descname">categories</tt><a class="headerlink" href="#dssg.Machine.Machine.categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>The categories property.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dssg.Machine.Machine.clean_data">
+<tt class="descname">clean_data</tt><big>(</big><em>lm</em>, <em>params={}</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.clean_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dssg.Machine.Machine.computeSimilarities">
+<tt class="descname">computeSimilarities</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.computeSimilarities" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a set of message id&#8217;s with similarity score, sorted by similarity score.
+I recommend using &gt;=0.875 to define &#8216;near-dup&#8217;.
+:return [(&#8216;1&#8217;, 0.9), (&#8216;2&#8217;, 0.8), ...], sorted by the real value</p>
+<blockquote>
+<div>(second element of each item) in decreasing order.</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dssg.Machine.Machine.entities">
+<tt class="descname">entities</tt><a class="headerlink" href="#dssg.Machine.Machine.entities" title="Permalink to this definition">¶</a></dt>
+<dd><p>The entities property.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dssg.Machine.Machine.getTrainStats">
+<tt class="descname">getTrainStats</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.getTrainStats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="dssg.Machine.Machine.guess">
+<tt class="descname">guess</tt><big>(</big><em>messages</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of messages (each in dictionary form), and make
+guesses their category labels, languages, and so on.
+:param messages list of messages
+:return [(msgDict, {&#8216;c1&#8217;: 4.6, &#8216;c2&#8217;: 4.2}), ...], list of pairs: message, dictionary of categories.</p>
+<blockquote>
+<div>The numbers returned range from (-inf, inf), but are ranks and cannot be interpreted beyond (e.g., as probabilites).</div></blockquote>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="dssg.Machine.Machine.guess_entities">
+<em class="property">static </em><tt class="descname">guess_entities</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.guess_entities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of entity guesses for the message
+Each entity (ideally) also includes</p>
+<blockquote>
+<div><ul class="simple">
+<li>text</li>
+<li>start (offset in included string)</li>
+<li>type (person, location, etc)</li>
+<li>confidence</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="dssg.Machine.Machine.guess_language">
+<em class="property">static </em><tt class="descname">guess_language</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.guess_language" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of language guesses for the message, with confidence measure (0 to 1).</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="dssg.Machine.Machine.guess_private_info">
+<em class="property">static </em><tt class="descname">guess_private_info</tt><big>(</big><em>text</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.guess_private_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of potentially private/sensitive information to consider stripping.
+Output is a list of tuples each containing two parts:</p>
+<blockquote>
+<div><ul class="simple">
+<li>the private information type (PERSON, ID, PHONE, etc.)</li>
+<li>the word(s) in the message that correspond to this unit</li>
+</ul>
+</div></blockquote>
+<p>Note that the same words in text may appear (in whole or part) in multiple tuples
+For example, a number may meet the criteria for both an ID and a phone number.</p>
+<p>The types of information:</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>Named entities [types: PERSON, GPE, etc.]</dt>
+<dd><p class="first last">Note this includes possible locations (GPE), which may be non-private and useful for geolocation</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">ID numbers (passport, driver&#8217;s license, etc.) [type: ID]</p>
+</li>
+<li><p class="first">Usernames (e.g. Twitter handles) [type: USERNAME]</p>
+</li>
+<li><p class="first">URLs [type: URL]</p>
+</li>
+<li><p class="first">E-mail addresses [type: EMAIL]</p>
+</li>
+<li><p class="first">Phone numbers, using the optional provided regex &#8220;phone_regex&#8221; [type: PHONE]</p>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dssg.Machine.Machine.messages">
+<tt class="descname">messages</tt><a class="headerlink" href="#dssg.Machine.Machine.messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>The messages property.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dssg.Machine.Machine.train">
+<tt class="descname">train</tt><big>(</big><em>messageList</em><big>)</big><a class="headerlink" href="#dssg.Machine.Machine.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes list of messages. each message is a dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">web_hooks Package</a><ul>
+<li><a class="reference internal" href="#module-dssg.Machine"><tt class="docutils literal"><span class="pre">Machine</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/web_hooks.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">WebHooksDemo 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nathan Leiby.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

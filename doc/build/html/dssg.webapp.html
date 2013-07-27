@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>webapp Package &mdash; WebHooksDemo 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WebHooksDemo 0.1 documentation" href="index.html" />
+    <link rel="up" title="dssg Package" href="dssg.html" />
+    <link rel="prev" title="dssg Package" href="dssg.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dssg.html" title="dssg Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">WebHooksDemo 0.1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >dssg</a> &raquo;</li>
+          <li><a href="dssg.html" accesskey="U">dssg Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="webapp-package">
+<h1>webapp Package<a class="headerlink" href="#webapp-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">webapp</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-dssg.webapp"></span></div>
+<div class="section" id="module-dssg.webapp.rest_api">
+<span id="rest-api-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">rest_api</span></tt> Module<a class="headerlink" href="#module-dssg.webapp.rest_api" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dssg.webapp.rest_api.detect_language">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">detect_language</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.detect_language" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given some text, returns a ranked list of likey natural languages
+the given content is in</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dssg.webapp.rest_api.extract_entities">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">extract_entities</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.extract_entities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given some text input, identify - besides location - people,
+organisations and other types of entities within the text</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dssg.webapp.rest_api.similar_messages">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">similar_messages</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.similar_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given text, finds the near duplicate messages.</p>
+<p>input: text
+output: list. made up of tuples of (id, message text).
+[todo: does this only return reports? or unannotated messages, too?
+should be any message for completeness, and then the front-end can decide
+what should be hidden from the user.]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dssg.webapp.rest_api.suggest_categories">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">suggest_categories</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.suggest_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a message/report, suggests the possible categories
+that the message could fall into</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dssg.webapp.rest_api.suggest_locations">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">suggest_locations</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.suggest_locations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suggest locations in a text string. These might be useful keywords for
+annotators to geolocate.</p>
+<p>input: full message&#8217;s text [string]
+output: list. each item is a python dictionary:</p>
+<blockquote>
+<div><ul class="simple">
+<li>text : the text for the specific entity [string]</li>
+<li>indices : tuple of (start [int], end [int]) offset where entity is
+located in given full message</li>
+<li>confidence : probability from 0-to-1 [float]</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="dssg.webapp.rest_api.suggest_sensitive_info">
+<tt class="descclassname">dssg.webapp.rest_api.</tt><tt class="descname">suggest_sensitive_info</tt><big>(</big><big>)</big><a class="headerlink" href="#dssg.webapp.rest_api.suggest_sensitive_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suggest personally identifying information (PII) &#8211; such as
+credit card numbers, phone numbers, email, etc &#8211;
+from a text string. These are useful for annotators to investigate
+and strip before publicly posting information.</p>
+<p>input: text,
+input: options</p>
+<blockquote>
+<div><ul class="simple">
+<li>custom regex for local phone numbers</li>
+<li>flags or booleans to specify the type of pii (e.g. phone_only)</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>output: list of dictionaries:</dt>
+<dd><ul class="first last simple">
+<li>word</li>
+<li>type (e-mail, phone, ID, person name, etc.)</li>
+<li>indices (start/end offset in text)</li>
+<li>confidence [todo: is possible?]</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">webapp Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">webapp</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-dssg.webapp.rest_api"><tt class="docutils literal"><span class="pre">rest_api</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dssg.html"
+                        title="previous chapter">dssg Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/dssg.webapp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dssg.html" title="dssg Package"
+             >previous</a> |</li>
+        <li><a href="index.html">WebHooksDemo 0.1 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >dssg</a> &raquo;</li>
+          <li><a href="dssg.html" >dssg Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nathan Leiby.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
