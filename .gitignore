@@ -1,0 +1,6 @@
+data
+*.pyc
+*.DS_Store
+*.swp
+dssg/tmp_*
+machine.data*

@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div id="user_input">
+
+    <form action="{{ url_for('home') }}" method=post>
+    {{ form.hidden_tag() }}
+
+    {{ form.message.label }}
+    {{ form.message(placeholder="Please enter a message to analyze...") }}
+
+        <div class="submit_buttons"> 
+        {{ form.submit }}
+        {{ form.lucky }}
+        </div>
+
+    </form>
+
+</div>
+
+{% if not form_only %}
+<hr />
+
+<div id="machine_response">
+
+
+    <h3>Entities (<span class="entity_location">Location</span> / <span class="entity_other">Other</span>)</h3>
+    {{ message }} <br />
+
+    <h3>Language</h3>
+
+    {{ guessed_language }}
+
+    <h3>Categories</h3>
+    
+    Actual: 
+    {% if actual_categories %}
+        <ul id="actual_categories">
+            {% for c in actual_categories %}
+                <li>{{ c }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>None</p>
+    {% endif %}
+
+    Suggestions (top 5): 
+    <ol id="actual_categories">
+        {% for c in suggested_categories %}
+            {% if c in actual_categories %}
+                <li><span class="is_correct">{{ c }}</span></li>
+            {% else %}
+                <li><span class="is_wrong">{{ c }}</span></li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+
+    <h3>Similar Messages</h3>
+    
+    {% if similar_messages %}
+        <ol>
+            {% for msg in similar_messages %}
+                <li>{{ msg }}</li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p>None</p>
+    {% endif %}
+
+</div>
+{% endif %}
+
+{% endblock %}
+
