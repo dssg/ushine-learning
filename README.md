@@ -8,7 +8,9 @@ Preparing for public release. Want to hook into online, free systems: automated 
 Auto-generate api docs
 
 ```
-sphinx-apidoc -o doc/source web_hooks # -f to overwrite
+sphinx-apidoc -o doc/source dssg # -f to overwrite
+
+# sphinx-apidoc -o doc/source dssg -f && cd doc && make html && cd ..
 ```
 
 make HTML (from `docs/` path, where makefile resides)
