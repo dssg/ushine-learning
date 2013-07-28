@@ -48,26 +48,26 @@ class TestRestApi(unittest.TestCase):
         pprint(json_val)
 
         self.assertIsInstance(
-            json_val, list, 'Should return a list of languages, under "%s" key in json' % (json_key,) )
+            json_val, list, 'Should return a list of languages, under "%s" key in json' % (json_key,))
 
         self.assertIsInstance(
-            json_val[0], list, 'Each item is a list' )
+            json_val[0], list, 'Each item is a list')
 
         # TODO: Should be unicode, or str?
         actual = type(json_val[0][0])
         expected = unicode
         self.assertIs(
-            actual, expected, 'First element should be a %s, instead was %s' % (expected, actual) )
+            actual, expected, 'First element should be a %s, instead was %s' % (expected, actual))
 
         self.assertEqual(
-            len(json_val[0][0]), 2, 'First element should be a 2-letter language code' )
+            len(json_val[0][0]), 2, 'First element should be a 2-letter language code')
 
         self.assertIs(
-            type(json_val[0][1]), float, 'Second element should be a float, 0-to-1 probability' )
-
+            type(json_val[0][1]), float, 'Second element should be a float, 0-to-1 probability')
 
         # TODO: move to non-API tests. belongs in machine tests
-        #   validity of method belongs in machine tests, while validity of API interface goes here
+        # validity of method belongs in machine tests, while validity of API
+        # interface goes here
         self.assertEqual(
             json_val[0][0], 'en', 'First value should be English')
 
@@ -94,33 +94,34 @@ class TestRestApi(unittest.TestCase):
         pprint(json_val)
 
         self.assertIsInstance(
-            json_val, list, 'Should return a list of locations, under "%s" key in json' % (json_key,) )
+            json_val, list, 'Should return a list of locations, under "%s" key in json' % (json_key,))
 
         self.assertIsInstance(
-            json_val[0], list, 'Each item is a list' )
+            json_val[0], list, 'Each item is a list')
 
         # TODO: Should be unicode, or str?
         actual = type(json_val[0][0])
         expected = unicode
         self.assertIs(
-            actual, expected, 'First element should be a %s, instead was %s' % (expected, actual) )
+            actual, expected, 'First element should be a %s, instead was %s' % (expected, actual))
 
         actual = json_val[0][0]
-        expected = ['LOCATION', 'GPE', 'GSP'] # location entity types; TODO: fetch from machine.py, so stays in sync?
+        expected = ['LOCATION', 'GPE', 'GSP']
+            # location entity types; TODO: fetch from machine.py, so stays in
+            # sync?
         self.assertIn(
-            actual, expected, 'First element should be a code for location entity type' )
-        
+            actual, expected, 'First element should be a code for location entity type')
+
         self.assertIs(
-            type(json_val[0][1]), unicode, 'Second element should be unicode entity text' )
+            type(json_val[0][1]), unicode, 'Second element should be unicode entity text')
 
         # TODO: move to non-API tests. belongs in machine tests
         self.assertEqual(
             json_val[0][1], 'Congo', 'First value should be Congo')
-    
+
         expected_count = 1
         self.assertEqual(
             len(json_val), expected_count, '%s locations should be returned, but instead got %s' % (expected_count, len(json_val)))
-
 
     # TODO: etc... to enforce all REST endpoints
     def test_suggest_sensitive_info(self):
@@ -131,9 +132,9 @@ class TestRestApi(unittest.TestCase):
 
     def test_suggest_categories(self):
         pass
-    
+
     def test_similar_messages(self):
         pass
-        
+
 if __name__ == '__main__':
     unittest.main()

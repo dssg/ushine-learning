@@ -1,6 +1,6 @@
 import json
 
-from flask import request, jsonify
+from flask import request, jsonify, abort
 
 from dssg.webapp import app
 from dssg.Machine import Machine
@@ -23,20 +23,14 @@ def detect_language():
         text = content['text']
         langs = mac.guess_language(text)
         g = {
-            "most_likely" : langs[0][0],
-            "languages" : langs
+            "most_likely": langs[0][0],
+            "languages": langs
         }
+        j = jsonify(g)
+        return j
 
     except:
-        print "Failed to load json."
-        g = {}
-        # TODO: best practices to respond to poorly formatted rest call?
-
-    j = jsonify(g)
-
-    # TODO: Fix formatting of response text. Should return a ranked list
-    # instead of dict
-    return j
+        abort(500)
 
 
 @app.route('/category', methods=['POST'])
@@ -81,15 +75,13 @@ def suggest_locations():
         text = content['text']
         entities = mac.guess_locations(text)
         g = {
-            "locations" : entities
+            "locations": entities
         }
+        j = jsonify(g)
+        return j
+
     except:
-        print "Failed to load json."
-        g = {}
-
-    j = jsonify(g)
-
-    return j
+        abort(500)
 
 
 @app.route('/entities', methods=['POST'])
@@ -102,13 +94,11 @@ def extract_entities():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_entities(text)
+        j = jsonify(g)
+        return j
+
     except:
-        print "Failed to load json."
-        g = {}
-
-    j = jsonify(g)
-
-    return j
+        abort(500)
 
 
 @app.route('/private_info', methods=['POST'])
@@ -135,14 +125,8 @@ def suggest_sensitive_info():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_private_info(text)
-        # TODO: Should call guess_location instead, which returns locations /
-        # GPE only
+        j = jsonify(g)
+        return j
+
     except:
-        print "Failed to load json."
-        g = {}
-
-    j = jsonify(g)
-
-    # TODO: Fix formatting of response text. Should return a ranked list
-    # instead of dict
-    return j
+        abort(500)

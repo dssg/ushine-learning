@@ -20,6 +20,8 @@ LANGUAGE_GUESS_OPTIONS = [
 ]
 LANGUAGE_GUESS_METHOD = LANGUAGE_GUESS_OPTIONS[2]
 
+LOCATION_ENTITIES = ['LOCATION', 'GPE', 'GSP']
+
 
 class Machine(object):
 
@@ -34,9 +36,9 @@ class Machine(object):
     def __init__(self):
         pass
 
-    # #
-    # # Properties
-    # #
+    #
+    # Properties
+    #
 
     # def categories():
     #     """{id : category_name} pairs
@@ -216,8 +218,8 @@ class Machine(object):
         """
 
         entities = Machine._extract_entities(text)
-        non_location_entities = [i for i in entities if i[0] not in ['LOCATION', 'GPE', 'GSP'] ]        
-        return non_location_entities
+        non_locations = [i for i in entities if i[0] not in LOCATION_ENTITIES]
+        return non_locations
 
     @staticmethod
     def guess_locations(text):
@@ -230,7 +232,8 @@ class Machine(object):
         """
 
         entities = Machine._extract_entities(text)
-        locations = [i for i in entities if i[0] in ['LOCATION', 'GPE', 'GSP'] ]
+        locations = [i for i in entities if i[0] in LOCATION_ENTITIES]
+
         return locations
 
     #
