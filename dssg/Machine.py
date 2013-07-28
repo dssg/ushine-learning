@@ -34,56 +34,56 @@ class Machine(object):
     def __init__(self):
         pass
 
-    #
-    # Properties
-    #
+    # #
+    # # Properties
+    # #
 
-    def categories():
-        """{id : category_name} pairs
-        """
-        doc = "The categories property."
+    # def categories():
+    #     """{id : category_name} pairs
+    #     """
+    #     doc = "The categories property."
 
-        def fget(self):
-            return self._categories
+    #     def fget(self):
+    #         return self._categories
 
-        def fset(self, value):
-            self._categories = value
+    #     def fset(self, value):
+    #         self._categories = value
 
-        def fdel(self):
-            del self._categories
-        return locals()
-    categories = property(**categories())
+    #     def fdel(self):
+    #         del self._categories
+    #     return locals()
+    # categories = property(**categories())
 
-    def entities():
-        doc = "The entities property."
+    # def entities():
+    #     doc = "The entities property."
 
-        def fget(self):
-            return self._entities
+    #     def fget(self):
+    #         return self._entities
 
-        def fset(self, value):
-            self._entities = value
+    #     def fset(self, value):
+    #         self._entities = value
 
-        def fdel(self):
-            del self._entities
-        return locals()
-    entities = property(**entities())
+    #     def fdel(self):
+    #         del self._entities
+    #     return locals()
+    # entities = property(**entities())
 
-    def messages():
-        """All messages which have been used to train the model
-        """
+    # def messages():
+    #     """All messages which have been used to train the model
+    #     """
 
-        doc = "The messages property."
+    #     doc = "The messages property."
 
-        def fget(self):
-            return self._messages
+    #     def fget(self):
+    #         return self._messages
 
-        def fset(self, value):
-            self._messages = value
+    #     def fset(self, value):
+    #         self._messages = value
 
-        def fdel(self):
-            del self._messages
-        return locals()
-    messages = property(**messages())
+    #     def fdel(self):
+    #         del self._messages
+    #     return locals()
+    # messages = property(**messages())
 
     #
     # Methods
@@ -199,54 +199,7 @@ class Machine(object):
         """Returns list of language guesses for the message, with confidence measure (0 to 1).
         """
 
-        langs = []
-        if LANGUAGE_GUESS_METHOD is "all":
-                mm = MicrosoftTranslatorApi.MicrosoftTranslatorApi()
-                mlang = mm.detect_language(text)
-                glang = guess_language.guessLanguage(text)
-                glang_full = guess_language.guessLanguageName(text)
-                langs = [
-                    {str(mlang): 'Bing API guess'},
-                    {glang: glang_full + ' - Python guess language'}
-                ]
-        elif LANGUAGE_GUESS_METHOD is "microsoft":
-            # TODO: Move this to the machine, so we just create one instance
-            # total rather than one per Message
-            mm = MicrosoftTranslatorApi.MicrosoftTranslatorApi()
-            l = mm.detect_language(text)
-            langs = [
-                (l, 1.0)
-            ]
-        elif LANGUAGE_GUESS_METHOD is "python_guess_language":
-            # l = guess_language.guessLanguage(text)
-            l = guess_language.guessLanguageName(text)
-            langs = [
-                (l, 1.0)
-            ]
-        elif LANGUAGE_GUESS_METHOD is "langid":
-            # langid.set_languages
-
-            #-- just guess the top language, returning a tuple with confidence
-            # l = langid.classify(text)
-
-            #-- or don't calculate confidence probability
-            # from langid.langid import LanguageIdentifier, model
-            # identifier = LanguageIdentifier.from_modelstring(model, norm_probs=False)
-            # l = identifier.classify(text)
-
-            # langs = [
-            #     l
-            # ]
-            # return langs
-
-            # guess a list of multiple languages, with confidences
-            return langid.rank(text)
-
-        else:
-            # Default, return some fake languages...
-            langs = None
-
-        return langs
+        return langid.rank(text)
 
     # @staticmethod
     # def set_languages(langs = []):
@@ -254,7 +207,7 @@ class Machine(object):
 
     @staticmethod
     def guess_entities(text):
-        """Returns list of entity guesses for the message
+        """Returns list of non-location entity guesses for the message
         Each entity (ideally) also includes
             - text
             - start (offset in included string)
@@ -263,7 +216,22 @@ class Machine(object):
         """
 
         entities = Machine._extract_entities(text)
-        return entities
+        non_location_entities = [i for i in entities if i[0] not in ['LOCATION', 'GPE', 'GSP'] ]        
+        return non_location_entities
+
+    @staticmethod
+    def guess_locations(text):
+        """Returns list of location entity guesses for the message
+        Each entity (ideally) also includes
+            - text
+            - start (offset in included string)
+            - type (person, location, etc)
+            - confidence
+        """
+
+        entities = Machine._extract_entities(text)
+        locations = [i for i in entities if i[0] in ['LOCATION', 'GPE', 'GSP'] ]
+        return locations
 
     #
     @staticmethod

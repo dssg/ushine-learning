@@ -13,12 +13,20 @@ def detect_language():
     """Given some text, returns a ranked list of likey natural languages
     the given content is in"""
 
+    print "request.data"
+    print request.data
+
     mac = Machine()
     try:
         # content = request.json
         content = json.loads(request.data)
         text = content['text']
-        g = mac.guess_language(text)
+        langs = mac.guess_language(text)
+        g = {
+            "most_likely" : langs[0][0],
+            "languages" : langs
+        }
+
     except:
         print "Failed to load json."
         g = {}
@@ -71,17 +79,16 @@ def suggest_locations():
         # content = request.json
         content = json.loads(request.data)
         text = content['text']
-        g = mac.guess_entities(text)
-        # TODO: Should call guess_location instead, which returns locations /
-        # GPE only
+        entities = mac.guess_locations(text)
+        g = {
+            "locations" : entities
+        }
     except:
         print "Failed to load json."
         g = {}
 
     j = jsonify(g)
 
-    # TODO: Fix formatting of response text. Should return a ranked list
-    # instead of dict
     return j
 
 
@@ -95,16 +102,12 @@ def extract_entities():
         content = json.loads(request.data)
         text = content['text']
         g = mac.guess_entities(text)
-        # TODO: Should call guess_location instead, which returns locations /
-        # GPE only
     except:
         print "Failed to load json."
         g = {}
 
     j = jsonify(g)
 
-    # TODO: Fix formatting of response text. Should return a ranked list
-    # instead of dict
     return j
 
 
