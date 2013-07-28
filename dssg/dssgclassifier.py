@@ -412,10 +412,14 @@ class DssgCategoryClassifier(object):
         return self._trainStats
 
     def __init__(self, binaryClassifierTrainer, classifierDic, categoryList, trainStats):
-        self._binaryClassifierTrainer = binaryClassifierTrainer
+        # TODO: This causes problem when pickling the classifer
+        # self._binaryClassifierTrainer = binaryClassifierTrainer
+
+        # All "baby" classifiers
         self._classifierDic = classifierDic
         self._categoryList = categoryList
         self._trainStats = trainStats
+        pass
 
     @classmethod
     def train(cls, binaryClassifierTrainer, messageList, dssgVectorizerGenerator=None):
@@ -442,6 +446,7 @@ class DssgCategoryClassifier(object):
         totNFP = 0
         totNTN = 0
         totNFN = 0
+
         for cat in categoryList:
             logging.info('Category: %s', cat)
             dset = []
