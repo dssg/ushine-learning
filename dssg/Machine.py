@@ -12,6 +12,8 @@ import langid
 import nltk
 import re
 
+import cPickle as pickle
+
 LANGUAGE_GUESS_OPTIONS = [
     'microsoft',
     'python_guess_language',
@@ -37,64 +39,44 @@ class Machine(object):
         pass
 
     #
-    # Properties
+    # Model Setup: training, import, export
     #
 
-    # def categories():
-    #     """{id : category_name} pairs
-    #     """
-    #     doc = "The categories property."
+    @classmethod
+    def load(cls, infile=""):
+        """
+        Allows the user to import an existing model (e.g. election, natural disaster, etc).
 
-    #     def fget(self):
-    #         return self._categories
+        These models will have a set of starting categories, e.g.
+            - model: election
+                - category: polling administration issues
+                - category: ...
+            - model: natural disaster
+                - category: ...
+                - category: ...
 
-    #     def fset(self, value):
-    #         self._categories = value
+        input: path to the model file [string]
+        output: none
+        errors: AssertionError if unpickled object is not valid class
+        """
+        f = open(infile, 'r')
+        mac = pickle.load(f)
+        assert(isinstance(
+            mac, cls)), "Type of unpickled object must be Machine"
+        return mac
 
-    #     def fdel(self):
-    #         del self._categories
-    #     return locals()
-    # categories = property(**categories())
+    def save(self, outfile=""):
+        """
+        Allows the user to export the current model (useful after it has been trained on new labeled message data)
 
-    # def entities():
-    #     doc = "The entities property."
+        input: path to the model file
+        output: none
+        """
+        f = open(outfile, 'w')
+        pickle.dump(self, f)
+        f.close()
+        return
 
-    #     def fget(self):
-    #         return self._entities
-
-    #     def fset(self, value):
-    #         self._entities = value
-
-    #     def fdel(self):
-    #         del self._entities
-    #     return locals()
-    # entities = property(**entities())
-
-    # def messages():
-    #     """All messages which have been used to train the model
-    #     """
-
-    #     doc = "The messages property."
-
-    #     def fget(self):
-    #         return self._messages
-
-    #     def fset(self, value):
-    #         self._messages = value
-
-    #     def fdel(self):
-    #         del self._messages
-    #     return locals()
-    # messages = property(**messages())
-
-    #
-    # Methods
-    #
-    def getTrainStats(self):
-        # TODO: _categoryClassifer must exist
-        return self._categoryClassifier.getTrainStats()
-
-    # TODO: Allow it to start with an empty model or an existing model.
     def train(self, messageList):
         """Takes list of messages. each message is a dictionary.
         """
@@ -142,6 +124,12 @@ class Machine(object):
             dssgBinaryClassifierTrainer, messageList, dssgVectorizerGenerator)
         self._categoryClassifier = categoryClassifier
         return self
+
+    #
+    # Methods
+    #
+    def getTrainStats(self):
+        return self._categoryClassifier.getTrainStats()
 
     def guess(self, messages):
         """ Takes a list of messages (each in dictionary form), and make
