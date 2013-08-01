@@ -27,3 +27,4 @@ scipy
 six==1.3.0
 tornado==3.0.2
 wsgiref==0.1.2
+sqlalchemy==0.8.0
