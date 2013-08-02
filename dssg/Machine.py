@@ -222,9 +222,10 @@ class Machine(object):
         
         :param text: the message to be analyzed
         """
-        entities = Machine._extract_entites(text)
+        entities = Machine._extract_entities(text)
         location_entity_set = set(LOCATION_ENTITIES)
-        for k in entities.iterkeys():
+        entity_keys = entities.keys()
+        for k in entity_keys:
             if not k in location_entity_set:
                 del entities[k]
 
