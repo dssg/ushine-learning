@@ -45,7 +45,8 @@ class Machine(object):
     @classmethod
     def load(cls, infile=""):
         """
-        Allows the user to import an existing model (e.g. election, natural disaster, etc).
+        Allows the user to import an existing model (e.g. election, 
+        natural disaster, etc).
 
         These models will have a set of starting categories, e.g.
             - model: election
@@ -67,7 +68,8 @@ class Machine(object):
 
     def save(self, outfile=""):
         """
-        Allows the user to export the current model (useful after it has been trained on new labeled message data)
+        Allows the user to export the current model (useful after it has been 
+        trained on new labeled message data)
 
         input: path to the model file
         output: none
@@ -135,8 +137,10 @@ class Machine(object):
         """ Takes a list of messages (each in dictionary form), and make
         guesses their category labels, languages, and so on.
         :param messages list of messages
-        :return [(msgDict, {'c1': 4.6, 'c2': 4.2}), ...], list of pairs: message, dictionary of categories.
-            The numbers returned range from (-inf, inf), but are ranks and cannot be interpreted beyond (e.g., as probabilites).
+        :return [(msgDict, {'c1': 4.6, 'c2': 4.2}), ...], list of pairs:
+            message, dictionary of categories.
+            The numbers returned range from (-inf, inf), but are ranks
+            and cannot be interpreted beyond (e.g., as probabilites).
         """
         assert (self._categoryClassifier is not None)
                 # TODO turn it into an exception
@@ -168,7 +172,9 @@ class Machine(object):
 
     def computeSimilarities(self, msg):
         """
-        returns a set of message id's with similarity score, sorted by similarity score.
+        returns a set of message id's with similarity score, sorted by
+        similarity score.
+        
         I recommend using >=0.875 to define 'near-dup'.
         :return [('1', 0.9), ('2', 0.8), ...], sorted by the real value
                 (second element of each item) in decreasing order.
@@ -186,14 +192,11 @@ class Machine(object):
 
     @staticmethod
     def guess_language(text):
-        """Returns list of language guesses for the message, with confidence measure (0 to 1).
+        """Returns list of language guesses for the message, 
+        with confidence measure (0 to 1).
         """
 
         return langid.rank(text)
-
-    # @staticmethod
-    # def set_languages(langs = []):
-    #     pass
 
     @staticmethod
     def guess_entities(text):
@@ -206,39 +209,45 @@ class Machine(object):
         """
 
         entities = Machine._extract_entities(text)
-        non_locations = [i for i in entities if i[0] not in LOCATION_ENTITIES]
-        return non_locations
+        for e in LOCATION_ENTITIES:
+            if e in entities:
+                del entities[e]
+
+        return entities
 
     @staticmethod
     def guess_locations(text):
-        """Returns list of location entity guesses for the message
-        Each entity (ideally) also includes
-            - text
-            - start (offset in included string)
-            - type (person, location, etc)
-            - confidence
+        """Returns the list of location entities contained in the specified
+        text
+        
+        :param text: the message to be analyzed
         """
+        entities = Machine._extract_entites(text)
+        location_entity_set = set(LOCATION_ENTITIES)
+        for k in entities.iterkeys():
+            if not k in location_entity_set:
+                del entities[k]
 
-        entities = Machine._extract_entities(text)
-        locations = [i for i in entities if i[0] in LOCATION_ENTITIES]
-
-        return locations
-
+        return entities
+        
     #
     @staticmethod
     def guess_private_info(text, **kwargs):
-        """ Returns list of potentially private/sensitive information to consider stripping.
+        """ Returns list of potentially private/sensitive information to 
+            consider stripping.
             Output is a list of tuples each containing two parts:
                 * the private information type (PERSON, ID, PHONE, etc.)
                 * the word(s) in the message that correspond to this unit
 
-            Note that the same words in text may appear (in whole or part) in multiple tuples
-            For example, a number may meet the criteria for both an ID and a phone number.
+            Note that the same words in text may appear (in whole or part) in
+            multiple tuples. For example, a number may meet the criteria for
+            both an ID and a phone number.
 
             The types of information:
 
             1. Named entities [types: PERSON, GPE, etc.]
-                Note this includes possible locations (GPE), which may be non-private and useful for geolocation
+                Note this includes possible locations (GPE), which may be 
+                non-private and useful for geolocation
             2. ID numbers (passport, driver's license, etc.) [type: ID]
             3. Usernames (e.g. Twitter handles) [type: USERNAME]
             4. URLs [type: URL]
@@ -251,7 +260,12 @@ class Machine(object):
         if "phone_regex" in kwargs.keys():
             phone_regex = kwargs["phone_regex"]
 
-        return Machine._extract_entities(text) + Machine._extract_ids(text) + Machine._extract_usernames(text) + Machine._extract_emails(text) + Machine._extract_urls(text) + Machine._extract_phones(text, phone_regex)
+        return Machine._extract_entities(text) + \
+            Machine._extract_ids(text) + \
+            Machine._extract_usernames(text) + \
+            Machine._extract_emails(text) + \
+            Machine._extract_urls(text) + \
+            Machine._extract_phones(text, phone_regex)
 
     @staticmethod
     def _extract_entities(text):
@@ -262,7 +276,14 @@ class Machine(object):
                 if hasattr(chunk, 'node'):
                     item = chunk.node, ' '.join(c[0] for c in chunk.leaves())
                     entities_list.append(item)
-        return entities_list
+
+        entities = {}
+        for (group, entity) in entities_list:
+            if not group in entities:
+                entities[group] = set([])
+            entities[group].add(entity)
+
+        return entities
 
     @staticmethod
     def _extract_ids(text):
@@ -277,7 +298,8 @@ class Machine(object):
 
     @staticmethod
     def _extract_usernames(text):
-    # Returns Twitter usernames of form @handle (alphanumerical and "_", max length: 15) [tag: USERNAME]
+    # Returns Twitter usernames of form @handle 
+    # (alphanumerical and "_", max length: 15) [tag: USERNAME]
         # twitter_regex = r'\[A-Za-z0-9_]{1,15}'
         twitter_regex = r'^|[^@\w](@\w{1,15})\b'
         twitter_re = re.compile(twitter_regex)
@@ -399,7 +421,8 @@ class Machine(object):
         return lm
 
     def _filter_labeled_messages(self, lm):
-        """Takes a dictionary and returns a filtered version, using rules specified in filter_fn()
+        """Takes a dictionary and returns a filtered version, using rules 
+        specified in filter_fn()
         """
 
         def _filter_fn(item):
@@ -409,7 +432,8 @@ class Machine(object):
             - (near)-identical to a previous message (simhash)
             - message too short (len)
             - message has too few words
-            - message has mixture of languages; not enough English to be useful in natural language processing
+            - message has mixture of languages; not enough English to be 
+                useful in natural language processing
             """
             message_text = item[0]
             # message_categories = item[1]

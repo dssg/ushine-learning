@@ -1,66 +1,124 @@
-import json
+from flask import abort, jsonify, request
 
-from flask import request, jsonify, abort
-
-from dssg.webapp import app
 from dssg.Machine import Machine
+from dssg.webapp import app
 
-# g_machine = None
 
-
-@app.route('/language', methods=['POST'])
+@app.route('/v1/language', methods=['POST'])
 def detect_language():
     """Given some text, returns a ranked list of likey natural languages
-    the given content is in"""
+    the given content is in
+    
+    Input parameters:
+        text: string
+    """
+    if not request.json or not 'text' in request.json:
+        abort(400)
+    language = Machine.guess_language(request.json['text'])[0]
+    
+    return jsonify({'language': language[0], "confidence": language[1]})
 
-    print "request.data"
-    print request.data
-
-    mac = Machine()
-    try:
-        # content = request.json
-        content = json.loads(request.data)
-        text = content['text']
-        langs = mac.guess_language(text)
-        g = {
-            "most_likely": langs[0][0],
-            "languages": langs
-        }
-        j = jsonify(g)
-        return j
-
-    except:
-        abort(500)
-
-
-@app.route('/category', methods=['POST'])
-def suggest_categories():
-    """Given a message/report, suggests the possible categories
-    that the message could fall into
+@app.route('/v1/deplyoments', methods=['POST'])
+def add_deployment():
+    """Registers a new Ushahidi deployment. The following information
+    should be included in the request
+        - deployment name
+        - list of categories; <id, name> for each category
     """
     pass
 
-
-@app.route('/similar', methods=['POST'])
-def similar_messages():
+@app.route('/v1/deployments/<int:deployment_id>/category', methods=['POST'])
+def suggest_categories(deployment_id):
+    """Given a message/report, suggests the possible categories
+    that the message could fall into
+    
+    :param deployment_id: the id of the deployment
     """
-    Given text, finds the near duplicate messages.
+    pass
 
+@app.route('/v1/deployments/<int:deployment_id>/messages', methods=['POST'])
+def add_message(deployment_id):
+    """Adds a new message for the deployment in :deployment_id
+    
+    The input parameters are:
+        message: string
+        
+    :param deployment_id: the id of the deployment
+    """
+    pass
+    
+
+@app.route('/v1/deployments/<int:deployment_id>/messages/<int:message_id>',
+            methods=['DELETE'])
+def delete_message(deployment_id, message_id):
+    """Deletes the message with the specified :message_id from
+    the deployment specified by the ``deployment_id`` parameter
+    
+    :param deployment_id: the id of the deployment
+    :param message_id: the id of the message
+    """
+    pass
+
+@app.route('/v1/deployments/<int:deployment_id>/similar', methods=['POST'])
+def similar_messages(deployment_id):
+    """
+    Given text, finds the near duplicate messages. The duplicate messages
+    are specific to the deployment specified in ``deployment_id``
+    
     input: text
     output: list. made up of tuples of (id, message text).
     [todo: does this only return reports? or unannotated messages, too?
     should be any message for completeness, and then the front-end can decide
     what should be hidden from the user.]
+    
+    :param deployment_id: the id of the deployment
     """
     pass
 
+@app.route('/v1/deployments/<int:deployment_id>/reports',
+           methods=['POST'])
+def add_report(deployment_id):
+    """Adds a new report to the deployment specified by the ``deployment_id``
+    parameter
+    
+    Input parameters:
+        description: string - Description of the report
+        categories: array of integers - category ids
+    
+    :param deployment_id: the id of the deployment
+    """
+    pass
 
-@app.route('/locations', methods=['POST'])
+@app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
+            methods=['DELETE'])
+def delete_report(deployment_id, report_id):
+    """Deletes the report with the specified ``report_id`` from the
+    deployment referenced by the :deployment_id parameter
+    
+    :param deployment_id: the id of the deployment
+    :param report_id: the id of the report
+    """
+    pass
+    
+@app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
+           methods=['PATCH'])
+def modify_report(deployment_id, report_id):
+    """Modifies the report with the specified :report_id. This report
+    must belong to the deployment with the specified :deployment_id
+    The :report_id is the database ID of the report in the Ushahidi
+    deployment
+    
+    :param deployment_id: the id of the deployment
+    :param report_id: the id of the report
+    """
+    pass
+
+@app.route('/v1/locations', methods=['POST'])
 def suggest_locations():
     """
     Suggest locations in a text string. These might be useful keywords for
     annotators to geolocate.
-
+    
     input: full message's text [string]
     output: list. each item is a python dictionary:
         - text : the text for the specific entity [string]
@@ -68,65 +126,52 @@ def suggest_locations():
           located in given full message
         - confidence : probability from 0-to-1 [float]
     """
-    mac = Machine()
-    try:
-        # content = request.json
-        content = json.loads(request.data)
-        text = content['text']
-        entities = mac.guess_locations(text)
-        g = {
-            "locations": entities
-        }
-        j = jsonify(g)
-        return j
+    if not request.json and not 'text' in request.json:
+        abort(400)
 
-    except:
-        abort(500)
+    # Get all entities and only fetch GPE
+    entities = Machine.guess_locations(request.json['text'])
+    for k,v in entities.iteritems():
+        entities[k] = list(v)
 
+    return jsonify({'locations': entities})
 
-@app.route('/entities', methods=['POST'])
+@app.route('/v1/entities', methods=['POST'])
 def extract_entities():
     """Given some text input, identify - besides location - people,
     organisations and other types of entities within the text"""
-    mac = Machine()
-    try:
-        # content = request.json
-        content = json.loads(request.data)
-        text = content['text']
-        g = mac.guess_entities(text)
-        j = jsonify(g)
-        return j
-
-    except:
-        abort(500)
-
-
-@app.route('/private_info', methods=['POST'])
+    pass
+    if not request.json and not 'text' in request.json:
+        abort(400)
+    
+    result = Machine.guess_entities(request.json['text'])
+    
+    entities = {}
+    for key, value in result.iteritems():
+        entities[key.lower()] = list(value)
+    
+    return jsonify({'entities': entities})
+    
+@app.route('/v1/private_info', methods=['POST'])
 def suggest_sensitive_info():
     """
     Suggest personally identifying information (PII) -- such as
-    credit card numbers, phone numbers, email, etc --
+    credit card numbers, phone numbers, email, etc -- 
     from a text string. These are useful for annotators to investigate
     and strip before publicly posting information.
-
+    
     input: text,
     input: options
         - custom regex for local phone numbers
         - flags or booleans to specify the type of pii (e.g. phone_only)
-    output: list of dictionaries:
+    output: list of dictionaries: 
         - word
         - type (e-mail, phone, ID, person name, etc.)
         - indices (start/end offset in text)
         - confidence [todo: is possible?]
     """
-    mac = Machine()
-    try:
-        # content = request.json
-        content = json.loads(request.data)
-        text = content['text']
-        g = mac.guess_private_info(text)
-        j = jsonify(g)
-        return j
-
-    except:
-        abort(500)
+    if not request.json and not 'text' in request.json:
+        abort(400)
+        
+    private_info = Machine.guess_private_info(request.json['text'])
+    return jsonify({'private_info': private_info})
