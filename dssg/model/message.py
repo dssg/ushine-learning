@@ -1,11 +1,10 @@
-from sqlalchemy import Column, ForeignKey, Integer, Sequence, Text
-
+from dssg import db
 import base_model
 
-class Message(base_model.BaseModel):
+class Message(base_model.BaseModel, db.Model):
     
     __tablename__ = 'message'
     
-    id = Column(Integer, Sequence('seq_message'), primary_key=True)
-    deployment_id = Column(Integer, ForeignKey('deployment.id'))
-    content = Column(Text, nullable=False)
+    id = db.Column(db.Integer, db.Sequence('seq_message'), primary_key=True)
+    deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
+    content = db.Column(db.Text, nullable=False)

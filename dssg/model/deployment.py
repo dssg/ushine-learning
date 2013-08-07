@@ -1,29 +1,32 @@
 import hashlib
-from sqlalchemy import Column, String, Integer, Sequence
-from sqlalchemy.orm import relationship
 
+from dssg import db
 import base_model
-from dssg.model import Session
 
-class Deployment(base_model.BaseModel):
+class Deployment(base_model.BaseModel, db.Model):
     
     __tablename__ = 'deployment'
     
-    id = Column(Integer, Sequence('seq_deployment'), primary_key=True)
-    name = Column(String)
-    url = Column(String, nullable=False)
-    url_hash = Column(String, nullable=False, unique=True)
-    message_count = Column(Integer)
-    report_count = Column(Integer)
+    id = db.Column(db.Integer, db.Sequence('seq_deployment'), primary_key=True)
+    name = db.Column(db.String)
+    url = db.Column(db.String, nullable=False)
+    url_hash = db.Column(db.String, nullable=False, unique=True)
+    message_count = db.Column(db.Integer)
+    report_count = db.Column(db.Integer)
     
     # One-to-many relationship definitions
-    categories = relationship('Category', backref='deployment',
+    categories = db.relationship('Category', backref='deployment',
                               cascade="all, delete, delete-orphan")
-    reports = relationship('Report', backref='deployment',
+    reports = db.relationship('Report', backref='deployment',
                            cascade="all, delete, delete-orphan")
-    messages = relationship('Message', backref='deployment',
+    messages = db.relationship('Message', backref='deployment',
                             cascade="all, delete, delete-orphan")
-    
+
+    def save(self):
+        self.url_hash = hashlib.md5(self.url).hexdigest()
+        db.session.add(self)
+        db.session.commit()
+        
     @classmethod
     def by_url(cl, deployment_url):
         """Return the deployment with the given url
@@ -38,6 +41,4 @@ class Deployment(base_model.BaseModel):
         """
         # Get the MD5 hash of the deployment url
         url_hash = hashlib.md5(deployment_url).hexdigest()
-        query = Session.query(Deplyment).filter(Deployment.url_hash==url_hash)
-        
-        return query.first()
+        return Deployment.query.filter_by(url_hash=url_hash).first()

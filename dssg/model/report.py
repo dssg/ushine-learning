@@ -1,24 +1,22 @@
-from sqlalchemy import Column, ForeignKey, Integer, Sequence, Table, Text
-from sqlalchemy.orm import relationship
-
+from dssg import db
 import base_model
-from dssg.model import Base
 
 # Association table
-report_categories = Table('report_category', Base.metadata,
-    Column('report_id', Integer, ForeignKey('report.id')),
-    Column('category_id', Integer, ForeignKey('category.id')))
+report_categories = db.Table('report_category',
+    db.Column('report_id', db.Integer, db.ForeignKey('report.id')),
+    db.Column('category_id', db.Integer, db.ForeignKey('category.id')))
 
-class Report(base_model.BaseModel):
+class Report(base_model.BaseModel, db.Model):
     
     __tablename__ = 'report'
     
-    id = Column(Integer, Sequence('seq_report'), primary_key=True)
-    deployment_id = Column(Integer, ForeignKey('deployment.id'))
-    origin_report_id = Column(Integer, nullable=False)
-    description = Column(Text, nullable=False)
+    id = db.Column(db.Integer, db.Sequence('seq_report'), primary_key=True)
+    deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
+    origin_report_id = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    title = db.Column(db.String, nullable=False)
     
     # Many-to-many relationship Report<-->Category
-    categories = relationship('Category', secondary=report_categories,
+    categories = db.relationship('Category', secondary=report_categories,
                               backref='report')
     

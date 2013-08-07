@@ -1,0 +1,2 @@
+# SQLAlchemy instance
+db = None

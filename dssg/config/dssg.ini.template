@@ -1,0 +1,13 @@
+# 
+# DSSG Configuration
+# 
+# Configuration options available for your DSSG instance
+# 
+
+[database]
+# Database settings
+sqlalchemy.url = mysql://dssgweb:dssgweb@localhost/dssg_web
+sqlalchemy.pool_size = 5
+
+[logger]
+level = DEBUG

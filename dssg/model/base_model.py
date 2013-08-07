@@ -1,26 +1,23 @@
-from sqlalchemy import Column, ForeignKey, Integer, Table
+from dssg import db
 
-from dssg.model import Base, Session
-
-
-class BaseModel(Base):
+class BaseModel:
     """Base class for all mapped classes"""
     
     def __init__(self, **kwargs):
-        for k,v in kwargs:
+        for k,v in kwargs.iteritems():
             setattr(self, k, v)
     
     @classmethod
     def by_id(cls, id):
         """Load and return by the primary key"""
-        return Session.query(cls).get(id)
+        return db.session.query(cls).get(id)
 
     def create(self):
         """Saves the current object in the database"""
-        Session.add(self)
-        Session.commit()
+        db.session.add(self)
+        db.session.commit()
         
     def delete(self):
         """Deletes current object from the database"""
-        Session.delete(self)
-        Session.commit()
+        db.session.delete(self)
+        db.session.commit()
