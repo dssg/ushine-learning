@@ -32,6 +32,9 @@ except IOError, e:
 
 init_db(config)
 
+# Import the API endpoints
+from dssg.webapp.rest_api import *
+
 # Initialze the db
 app.secret_key = 'YOUR SECRET KEY'
 
