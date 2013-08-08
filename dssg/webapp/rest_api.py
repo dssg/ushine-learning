@@ -1,5 +1,6 @@
 from flask import abort, jsonify, request
 
+import dssg.model as _model
 from dssg.Machine import Machine
 from dssg.webapp import app
 
@@ -25,7 +26,33 @@ def add_deployment():
         - deployment name
         - list of categories; <id, name> for each category
     """
-    pass
+    if not requst.json and \
+        ('name' not in request.json or 'url' not in request.json):
+        abort(400)
+    name, url = request.json['name'], request.json['url']
+
+    # Is there a deployment that's been registered with the specified url
+    deployment = _model.Deployment.by_url(url)
+    if deployment is None:
+        deployment = _model.Deployment(name=name, url=url)
+        deployment.save()
+    else:
+        return jsonify(deployment.as_dict())
+    
+    # Add the categories
+    if 'categories' in request.json:
+        categories = []
+        for cat in request.json['categories']:
+            category = _model.Category(deployment_id=deployment.id,
+                                       origin_category_id=cat['id'],
+                                       origin_parent_id=cat['parent_id'],
+                                       title=cat['title'])
+            categories.append(category)
+
+        # Save the categories in bulk
+        _model.Category.create_all(categories)
+
+    return jsonify(deployment.as_dict())
 
 @app.route('/v1/deployments/<int:deployment_id>/category', methods=['POST'])
 def suggest_categories(deployment_id):
@@ -34,7 +61,13 @@ def suggest_categories(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
-    pass
+    # if not request.json:
+    #     abort(400)
+    # # Does the deployment exist
+    # deployment = _model.Deployment.by_id(deployment_id)
+    # if not deployment:
+    #     abort(404)
+    # pass
 
 @app.route('/v1/deployments/<int:deployment_id>/messages', methods=['POST'])
 def add_message(deployment_id):

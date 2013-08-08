@@ -22,3 +22,11 @@ class TestDeployment:
         """Tests finding a deployment by its url"""
         result = Deployment.by_url('http://dssg.ushahididev.com')
         assert_equals(result.url_hash, 'bc2f8da9e34c3fe1ec5fdc2d1fea23c1')
+
+    def test_as_dict(self):
+        deployment = Deployment.by_url('https://monitoringbudget.crowdmap.com')
+        _dict = deployment.as_dict()
+        # assert_equals('categories' in _dict, True)
+        # assert_equals('reports' in _dict, True)
+        # assert_equals('messages' in _dict, True)
+        assert_equals(_dict['name'], 'Nigeria budget monitoring')
