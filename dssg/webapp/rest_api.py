@@ -1,7 +1,10 @@
 from flask import abort, jsonify, request
 
-import dssg.model as _model
 from dssg.Machine import Machine
+from dssg.model import Category
+from dssg.model import Deployment
+from dssg.model import Message
+from dssg.model import Report
 from dssg.webapp import app
 
 
@@ -32,25 +35,26 @@ def add_deployment():
     name, url = request.json['name'], request.json['url']
 
     # Is there a deployment that's been registered with the specified url
-    deployment = _model.Deployment.by_url(url)
+    deployment = Deployment.by_url(url)
     if deployment is None:
-        deployment = _model.Deployment(name=name, url=url)
+        deployment = Deployment(name=name, url=url)
         deployment.save()
     else:
         return jsonify(deployment.as_dict())
     
     # Add the categories
-    if 'categories' in request.json:
+    _post = request.json
+    if 'categories' in _post:
         categories = []
-        for cat in request.json['categories']:
-            category = _model.Category(deployment_id=deployment.id,
-                                       origin_category_id=cat['id'],
-                                       origin_parent_id=cat['parent_id'],
-                                       title=cat['title'])
+        for cat in _post['categories']:
+            category = Category(deployment_id=deployment.id,
+                                origin_category_id=cat['origin_category_id'],
+                                origin_parent_id=cat['origin_parent_id'],
+                                title=cat['title'])
             categories.append(category)
 
         # Save the categories in bulk
-        _model.Category.create_all(categories)
+        Category.create_all(categories)
 
     return jsonify(deployment.as_dict())
 
@@ -64,7 +68,7 @@ def suggest_categories(deployment_id):
     # if not request.json:
     #     abort(400)
     # # Does the deployment exist
-    # deployment = _model.Deployment.by_id(deployment_id)
+    # deployment = Deployment.by_id(deployment_id)
     # if not deployment:
     #     abort(404)
     # pass
@@ -78,8 +82,19 @@ def add_message(deployment_id):
         
     :param deployment_id: the id of the deployment
     """
-    pass
-    
+    if 'origin_message_id' not in request.json and \
+        'content' not in request.json:
+        abort(400)
+
+    # Does the deployment exist
+    deployment = Deployment.by_id(deployment_id)
+    if deployment is None:
+        abort(404)
+    message = Message(deployment_id=deployment_id,
+                      origin_message_id=request.json['origin_message_id'],
+                      content=request.json['content'])
+    message.save()
+    return jsonify(message.as_dict())
 
 @app.route('/v1/deployments/<int:deployment_id>/messages/<int:message_id>',
             methods=['DELETE'])
@@ -90,7 +105,12 @@ def delete_message(deployment_id, message_id):
     :param deployment_id: the id of the deployment
     :param message_id: the id of the message
     """
-    pass
+    message = db.session.query(Message).\
+        filter(Message.deployment_id==deployment_id).\
+        filter(Message.origin_message_id==message_id)
+    if message is None:
+        abort(404)
+    message.delete()
 
 @app.route('/v1/deployments/<int:deployment_id>/similar', methods=['POST'])
 def similar_messages(deployment_id):
@@ -120,7 +140,18 @@ def add_report(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
-    pass
+    if Deployment.by_id(deployment_id) is None:
+        abort(404)
+    
+    if 'title' not in request.json and 'description' not in request.json:
+        abort(400)
+    _post = request.json
+    report=Report(deployment_id=deployment_id,
+                  origin_report_id=_post['origin_report_id'],
+                  title=_post['title'],
+                  description=_post['description'])
+    report.save()
+    return jsonify(report.as_dict())
 
 @app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
             methods=['DELETE'])
@@ -131,8 +162,14 @@ def delete_report(deployment_id, report_id):
     :param deployment_id: the id of the deployment
     :param report_id: the id of the report
     """
-    pass
-    
+    report = db.session.query(Report).\
+        filter(Report.deployment_id==deployment_id).\
+        filter(Report.origin_report_id=report_id)
+    # Does the report exist?
+    if report is None:
+        abort(404)
+    report.delete()
+
 @app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
            methods=['PATCH'])
 def modify_report(deployment_id, report_id):
