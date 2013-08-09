@@ -7,4 +7,5 @@ class Message(base_model.BaseModel, db.Model):
     
     id = db.Column(db.Integer, db.Sequence('seq_message'), primary_key=True)
     deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
+    origin_message_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
