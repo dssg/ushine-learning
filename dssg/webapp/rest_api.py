@@ -106,8 +106,8 @@ def delete_message(deployment_id, message_id):
     :param message_id: the id of the message
     """
     message = db.session.query(Message).\
-        filter(Message.deployment_id==deployment_id).\
-        filter(Message.origin_message_id==message_id)
+        filter(Message.deployment_id == deployment_id,
+               Message.origin_message_id == message_id)
     if message is None:
         abort(404)
     message.delete()
@@ -163,8 +163,8 @@ def delete_report(deployment_id, report_id):
     :param report_id: the id of the report
     """
     report = db.session.query(Report).\
-        filter(Report.deployment_id==deployment_id).\
-        filter(Report.origin_report_id=report_id)
+        filter(Report.deployment_id == deployment_id,
+               Report.origin_report_id == report_id)
     # Does the report exist?
     if report is None:
         abort(404)
