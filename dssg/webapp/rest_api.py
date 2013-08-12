@@ -1,3 +1,4 @@
+import logging as logger
 from flask import abort, jsonify, request
 
 from dssg.Machine import Machine
@@ -22,16 +23,17 @@ def detect_language():
     
     return jsonify({'language': language[0], "confidence": language[1]})
 
-@app.route('/v1/deplyoments', methods=['POST'])
+@app.route('/v1/deployments', methods=['POST'])
 def add_deployment():
     """Registers a new Ushahidi deployment. The following information
     should be included in the request
         - deployment name
         - list of categories; <id, name> for each category
     """
-    if not requst.json and \
+    if not request.json and \
         ('name' not in request.json or 'url' not in request.json):
         abort(400)
+    logger.debug(request.json)
     name, url = request.json['name'], request.json['url']
 
     # Is there a deployment that's been registered with the specified url
