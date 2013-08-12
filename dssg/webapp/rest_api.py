@@ -1,11 +1,9 @@
 import logging as logger
 from flask import abort, jsonify, request
 
+from dssg import db
 from dssg.Machine import Machine
-from dssg.model import Category
-from dssg.model import Deployment
-from dssg.model import Message
-from dssg.model import Report
+from dssg.model import *
 from dssg.webapp import app
 
 
@@ -33,7 +31,6 @@ def add_deployment():
     if not request.json and \
         ('name' not in request.json or 'url' not in request.json):
         abort(400)
-    logger.debug(request.json)
     name, url = request.json['name'], request.json['url']
 
     # Is there a deployment that's been registered with the specified url
@@ -144,15 +141,44 @@ def add_report(deployment_id):
     """
     if Deployment.by_id(deployment_id) is None:
         abort(404)
-    
-    if 'title' not in request.json and 'description' not in request.json:
-        abort(400)
+
+    errors = {}
     _post = request.json
+    # Check for fields
+    if 'title' not in _post:
+        errors['title'] = 'The report title is missing'
+    if 'description' not in _post:
+        errors['description'] = 'The report description is missing'
+    if 'categories' not in _post or len( _post['categories']) > 0:
+        errors['categories'] = 'The report categories must be specified'
+
+    # Did we encounter any errors?
+    if len(errors) > 0:
+        abort(400)
+
+    # Get the categories
+    categories = db.session.query(Category).\
+        filter(Category.deployment_id == deployment_id,
+               Category.origin_category_id.in_(_post['categories']))
+
+    if len(categories) == 0:
+        app.logger.error("The specified categories are invalid")
+        abort(400)
+
     report=Report(deployment_id=deployment_id,
                   origin_report_id=_post['origin_report_id'],
                   title=_post['title'],
                   description=_post['description'])
+    # Create the report
     report.save()
+    
+    # Save the report categories
+    report_categories = []
+    for category in report_categories:
+        rc = ReportCategory(report_id=report.id, category_id=category.id)
+        report_categories.append(rc)
+    ReportCategory.create_all(report_categories)
+
     return jsonify(report.as_dict())
 
 @app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
