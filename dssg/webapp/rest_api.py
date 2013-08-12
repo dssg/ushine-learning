@@ -92,7 +92,7 @@ def add_message(deployment_id):
     message = Message(deployment_id=deployment_id,
                       origin_message_id=request.json['origin_message_id'],
                       content=request.json['content'])
-    message.save()
+    message.create()
     return jsonify(message.as_dict())
 
 @app.route('/v1/deployments/<int:deployment_id>/messages/<int:message_id>',
@@ -151,11 +151,12 @@ def add_report(deployment_id):
         errors['title'] = 'The report title is missing'
     if 'description' not in _post:
         errors['description'] = 'The report description is missing'
-    if 'categories' not in _post or len( _post['categories']) > 0:
+    if 'categories' not in _post or len( _post['categories']) == 0:
         errors['categories'] = 'The report categories must be specified'
 
     # Did we encounter any errors?
     if len(errors) > 0:
+        app.logger.error("There are some errors in the request %r" % errors)
         abort(400)
 
     # Does the specified report already exist?
@@ -172,7 +173,7 @@ def add_report(deployment_id):
     categories = db.session.query(Category).\
         filter(Category.deployment_id == deployment_id,
                Category.origin_category_id.in_(_post['categories'])).all()
-
+    
     # Have the specified category ids been registered?
     if len(categories) == 0:
         app.logger.error("The specified categories are invalid")
@@ -183,7 +184,7 @@ def add_report(deployment_id):
                   title=_post['title'],
                   description=_post['description'])
     # Create the report
-    report.save()
+    report.create()
     
     # Save the report categories
     report_categories = []

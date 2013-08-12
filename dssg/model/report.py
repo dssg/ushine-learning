@@ -3,7 +3,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 import base_model
 from dssg import db
 
-class Report(base_model.BaseModel, db.Model):    
+class Report(base_model.BaseModel, db.Model):
     __tablename__ = 'report'    
     id = db.Column(db.Integer, db.Sequence('seq_report'), primary_key=True)
     deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
