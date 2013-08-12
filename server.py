@@ -17,7 +17,7 @@ def init_db(config):
 
         # SQLAlchemy configuration
         app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
-        app.config['SQLALCHEMY_POOL_SIZE'] = pool_size
+        app.config['SQLALCHEMY_POOL_SIZE'] = int(pool_size)
     except ConfigParser.NoSectionError, e:
         logger.error("The specified section does not exist", e)
         
