@@ -145,6 +145,8 @@ def add_report(deployment_id):
     errors = {}
     _post = request.json
     # Check for fields
+    if 'origin_report_id' not in _post:
+        errors['origin_report_id'] = 'The report id is missing'
     if 'title' not in _post:
         errors['title'] = 'The report title is missing'
     if 'description' not in _post:
@@ -156,11 +158,22 @@ def add_report(deployment_id):
     if len(errors) > 0:
         abort(400)
 
+    # Does the specified report already exist?
+    _report = db.session.query(Report).\
+        filter(Report.origin_report_id == _post['origin_report_id'],
+               Report.deployment_id == deployment_id).first()
+
+    if not _report is None:
+        app.logger.error("The report %s has already been registered" %
+            _post['origin_report_id'])
+        abort(400)
+
     # Get the categories
     categories = db.session.query(Category).\
         filter(Category.deployment_id == deployment_id,
-               Category.origin_category_id.in_(_post['categories']))
+               Category.origin_category_id.in_(_post['categories'])).all()
 
+    # Have the specified category ids been registered?
     if len(categories) == 0:
         app.logger.error("The specified categories are invalid")
         abort(400)
