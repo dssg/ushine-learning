@@ -8,9 +8,9 @@ class Deployment(base_model.BaseModel, db.Model):
     __tablename__ = 'deployment'
     
     id = db.Column(db.Integer, db.Sequence('seq_deployment'), primary_key=True)
-    name = db.Column(db.String)
-    url = db.Column(db.String, nullable=False)
-    url_hash = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String(50))
+    url = db.Column(db.String(100), nullable=False)
+    url_hash = db.Column(db.String(32), nullable=False, unique=True)
     message_count = db.Column(db.Integer)
     report_count = db.Column(db.Integer)
     

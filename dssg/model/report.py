@@ -14,7 +14,7 @@ class Report(base_model.BaseModel, db.Model):
     deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
     origin_report_id = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=False)
-    title = db.Column(db.String, nullable=False)
+    title = db.Column(db.String(255), nullable=False)
     
     # Many-to-many relationship Report<-->Category
     categories = db.relationship('Category', secondary=report_categories,

@@ -10,5 +10,5 @@ class Category(base_model.BaseModel, db.Model):
     deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
     origin_category_id = db.Column(db.Integer, nullable=False)
     origin_parent_id = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String, nullable=False)
+    title = db.Column(db.String(50), nullable=False)
         
