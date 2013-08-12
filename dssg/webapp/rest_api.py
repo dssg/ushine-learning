@@ -188,7 +188,7 @@ def add_report(deployment_id):
     
     # Save the report categories
     report_categories = []
-    for category in report_categories:
+    for category in categories:
         rc = ReportCategory(report_id=report.id, category_id=category.id)
         report_categories.append(rc)
     ReportCategory.create_all(report_categories)
