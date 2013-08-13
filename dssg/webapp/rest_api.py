@@ -1,11 +1,14 @@
 import logging as logger
 from flask import abort, jsonify, request
+from hashes.simhash import simhash
 
 from dssg import db
 from dssg.Machine import Machine
 from dssg.model import *
 from dssg.webapp import app
 
+similarity_threshold = 0.875
+max_similar_messages = 5
 
 @app.route('/v1/language', methods=['POST'])
 def detect_language():
@@ -81,17 +84,22 @@ def add_message(deployment_id):
         
     :param deployment_id: the id of the deployment
     """
-    if 'origin_message_id' not in request.json and \
-        'content' not in request.json:
+    if not request.json:
+        abort(400)
+    _post = request.json
+    if 'origin_message_id' not in _post and 'content' not in _post:
         abort(400)
 
     # Does the deployment exist
     deployment = Deployment.by_id(deployment_id)
     if deployment is None:
         abort(404)
+
+    _hash = simhash(_post['content'])
     message = Message(deployment_id=deployment_id,
-                      origin_message_id=request.json['origin_message_id'],
-                      content=request.json['content'])
+                      origin_message_id=_post['origin_message_id'],
+                      content=_post['content'],
+                      simhash=str(_hash))
     message.create()
     return jsonify(message.as_dict())
 
@@ -106,7 +114,7 @@ def delete_message(deployment_id, message_id):
     """
     message = db.session.query(Message).\
         filter(Message.deployment_id == deployment_id,
-               Message.origin_message_id == message_id)
+               Message.origin_message_id == message_id).first()
     if message is None:
         abort(404)
     message.delete()
@@ -125,7 +133,48 @@ def similar_messages(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
-    pass
+    if not request.json and 'text' not in request.json:
+        abort(400)
+    # Does the deployment exist?
+    deployment = Deployment.by_id(deployment_id)
+    if deployment is None:
+        app.logger.debug("The deployment %d does not exist" % deployment_id)
+        abort(404)
+
+    # Get the simhash of the submitted message
+    _hash = simhash(request.json['text'])
+    
+    candidates = {}
+    scores = []
+    # Compare each message against the supplied message
+    # TODO: Investiage ways of speeding this - complexity is O(n)
+    for message in db.session.query(Message).\
+        filter(Message.deployment_id == deployment_id).all():
+        target = simhash(hash=long(message.simhash))
+        similarity = _hash.similarity(target)
+        if similarity >= similarity_threshold:
+            scores.append((message.id, similarity))
+            candidates[message.id] = message
+    
+    if len(scores) == 0:
+        return jsonify({})
+
+    # Sort the scores in descending order
+    # using the similarity value as they key
+    scores.sort(key=lambda x: x[1], reverse=True)
+    
+    # No. of results to return
+    result_size = max_similar_messages if 'count' not in request.json else \
+        int(request.json['count'])
+
+    retval = []
+    for x in range(result_size):
+        message_dict  = candidates[scores[i][0]].as_dict()
+        message_dict['score'] = scores[i][1]
+        del message_dict['simhash']
+        retval.append(message_dict)
+
+    return jsonify(retval)
 
 @app.route('/v1/deployments/<int:deployment_id>/reports',
            methods=['POST'])
@@ -179,10 +228,13 @@ def add_report(deployment_id):
         app.logger.error("The specified categories are invalid")
         abort(400)
 
+    # Compute the simhash on the report description
+    _hash = simhash(_post['description'])
     report=Report(deployment_id=deployment_id,
                   origin_report_id=_post['origin_report_id'],
                   title=_post['title'],
-                  description=_post['description'])
+                  description=_post['description'],
+                  simhash=str(_hash))
     # Create the report
     report.create()
     
