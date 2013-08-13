@@ -9,3 +9,4 @@ class Message(base_model.BaseModel, db.Model):
     deployment_id = db.Column(db.Integer, db.ForeignKey('deployment.id'))
     origin_message_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
+    simhash = db.Column(db.String(64), nullable=False)

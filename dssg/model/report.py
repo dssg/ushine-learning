@@ -10,6 +10,7 @@ class Report(base_model.BaseModel, db.Model):
     origin_report_id = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=False)
     title = db.Column(db.String(255), nullable=False)
+    simhash = db.Column(db.String(64), nullable=False)
     
     # Association proxy of "report_categories" collection
     # to "categories" attribute
