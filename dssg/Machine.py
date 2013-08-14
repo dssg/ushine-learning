@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-from .dssgclassifier import *
 # do easy_install python-hashes to install (or visit
 # https://github.com/sangelone/python-hashes)
 from hashes.simhash import simhash
 from pprint import pprint
+
+from .util import *
+from .vectorizer import *
+from .classifier import *
 
 # import MicrosoftTranslatorApi
 import guess_language
@@ -35,7 +38,8 @@ class Machine(object):
     _status = []
     _likely_languages = []
 
-    def __init__(self):
+    def __init__(self, categoryClassifier=None):
+        _categoryClassifier = categoryClassifier
         pass
 
     #
@@ -60,10 +64,10 @@ class Machine(object):
         output: none
         errors: AssertionError if unpickled object is not valid class
         """
-        f = open(infile, 'r')
-        mac = pickle.load(f)
-        assert(isinstance(
-            mac, cls)), "Type of unpickled object must be Machine"
+        with open(infile, 'rb') as f
+            mac = pickle.load(f)
+            assert(isinstance(
+                mac, cls)), "Type of unpickled object must be Machine"
         return mac
 
     def save(self, outfile=""):
@@ -82,6 +86,7 @@ class Machine(object):
     def train(self, messageList):
         """Takes list of messages. each message is a dictionary.
         """
+        assert False, "Not implemented yet"
 
         #-TODO change cleanup codes so it uses dictionary form of message
 # Cleanup training dataset
@@ -151,7 +156,7 @@ class Machine(object):
         # minimum_similar_messages = 5
         output = []
         for msg in messages:
-            categories = self._categoryClassifier.predictScore(msg)
+            categories = self._categoryClassifier.predictProba(msg)
             similarity_computations = self.computeSimilarities(
                 msg)  # TODO change..
             # pprint(similarity_computations[:10])
@@ -189,6 +194,11 @@ class Machine(object):
 
         retList.sort(key=lambda x: x[1], reverse=True)
         return retList
+
+    def guess_categories(msg):
+        """ expects msg['title'] and msg['description']
+        """
+        return self._categoryClassifier.predictProba(msg)
 
     @staticmethod
     def guess_language(text):
