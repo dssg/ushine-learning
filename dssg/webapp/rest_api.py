@@ -37,7 +37,6 @@ def compute_similarities(text, models, count=None):
         if similarity >= similarity_threshold:
             scores.append((model.id, similarity))
             candidates[model.id] = model
-    
     if len(scores) == 0: return []
 
     scores.sort(key=lambda x: x[1], reverse=True)
@@ -45,9 +44,9 @@ def compute_similarities(text, models, count=None):
 
     retval = []
     for x in range(result_size):
-        message_dict  = candidates[scores[i][0]].as_dict()
+        message_dict  = candidates[scores[x][0]].as_dict()
         del message_dict['simhash']
-        message_dict['score'] = scores[i][1]
+        message_dict['score'] = scores[x][1]
         retval.append(message_dict)
     return retval
 
@@ -360,5 +359,5 @@ def similar_reports(deployment_id):
             all()
     count = int(request.json['count']) if 'count' in request.json else None
     reports = compute_similarities(request.json['text'], models, count)
-    return jsonify(reports)
+    return jsonify({'reports': reports})
         
