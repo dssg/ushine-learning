@@ -10,6 +10,47 @@ from dssg.webapp import app
 similarity_threshold = 0.875
 max_similar_messages = 5
 
+def verify_deployment(deployment_id):
+    """Verifies that the speicifed deployment exists
+    in the database
+    
+    :param deployment_id: Unique ID of the deployment in the database
+    """
+    if Deployment.by_id(deployment_id) is None:
+        abort(404)
+
+def compute_similarities(text, models, count=None):
+    """Finds items that are similar to the specified text
+    :param text: The text to be used for comparison
+    :param models: The list of models to be compared against text
+                   Each of the entries should have a simhash property
+    :param count: The no. of similar items to return
+    """
+    # Get the simhash of the submitted message
+    _hash = simhash(text)
+    candidates, scores = {}, []
+
+    # TODO: Investiage ways of speeding this - complexity is O(n)
+    for model in models:
+        target = simhash(hash=long(model.simhash))
+        similarity = _hash.similarity(target)
+        if similarity >= similarity_threshold:
+            scores.append((model.id, similarity))
+            candidates[model.id] = model
+    
+    if len(scores) == 0: return []
+
+    scores.sort(key=lambda x: x[1], reverse=True)
+    result_size = max_similar_messages if count is None else count
+
+    retval = []
+    for x in range(result_size):
+        message_dict  = candidates[scores[i][0]].as_dict()
+        del message_dict['simhash']
+        message_dict['score'] = scores[i][1]
+        retval.append(message_dict)
+    return retval
+
 @app.route('/v1/language', methods=['POST'])
 def detect_language():
     """Given some text, returns a ranked list of likey natural languages
@@ -135,46 +176,17 @@ def similar_messages(deployment_id):
     """
     if not request.json and 'text' not in request.json:
         abort(400)
-    # Does the deployment exist?
-    deployment = Deployment.by_id(deployment_id)
+    verify_deployment(deployment_od)
     if deployment is None:
         app.logger.debug("The deployment %d does not exist" % deployment_id)
         abort(404)
-
-    # Get the simhash of the submitted message
-    _hash = simhash(request.json['text'])
-    
-    candidates = {}
-    scores = []
-    # Compare each message against the supplied message
-    # TODO: Investiage ways of speeding this - complexity is O(n)
-    for message in db.session.query(Message).\
-        filter(Message.deployment_id == deployment_id).all():
-        target = simhash(hash=long(message.simhash))
-        similarity = _hash.similarity(target)
-        if similarity >= similarity_threshold:
-            scores.append((message.id, similarity))
-            candidates[message.id] = message
-    
-    if len(scores) == 0:
-        return jsonify({})
-
-    # Sort the scores in descending order
-    # using the similarity value as they key
-    scores.sort(key=lambda x: x[1], reverse=True)
-    
-    # No. of results to return
-    result_size = max_similar_messages if 'count' not in request.json else \
-        int(request.json['count'])
-
-    retval = []
-    for x in range(result_size):
-        message_dict  = candidates[scores[i][0]].as_dict()
-        message_dict['score'] = scores[i][1]
-        del message_dict['simhash']
-        retval.append(message_dict)
-
-    return jsonify(retval)
+    # Get all the messages for the deployment
+    models = db.session.query(Message).\
+            filter_by(deployment_id==deployment_id).\
+            all()
+    count = int(request.json['count']) if 'count' in request.json else None
+    messages = compute_similarities(request.json['text'], messages, count)
+    return jsonify(messages)
 
 @app.route('/v1/deployments/<int:deployment_id>/reports',
            methods=['POST'])
@@ -188,9 +200,7 @@ def add_report(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
-    if Deployment.by_id(deployment_id) is None:
-        abort(404)
-
+    verify_deployment(deployment_id)
     errors = {}
     _post = request.json
     # Check for fields
@@ -258,8 +268,7 @@ def delete_report(deployment_id, report_id):
     """
     report = db.session.query(Report).\
         filter(Report.deployment_id == deployment_id,
-               Report.origin_report_id == report_id)
-    # Does the report exist?
+               Report.origin_report_id == report_id).first()
     if report is None:
         abort(404)
     report.delete()
@@ -339,3 +348,17 @@ def suggest_sensitive_info():
         
     private_info = Machine.guess_private_info(request.json['text'])
     return jsonify({'private_info': private_info})
+
+@app.route('/v1/deployments/<int:deployment_id>/similar_reports',
+           methods=['POST'])
+def similar_reports(deployment_id):
+    if not request.json or not 'text' in request.json:
+        abort(400)
+    verify_deployment(deployment_id)
+    models = db.session.query(Report).\
+            filter(Report.deployment_id==deployment_id).\
+            all()
+    count = int(request.json['count']) if 'count' in request.json else None
+    reports = compute_similarities(request.json['text'], models, count)
+    return jsonify(reports)
+        
