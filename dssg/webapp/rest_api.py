@@ -33,6 +33,7 @@ def compute_similarities(text, models, count=None):
     # TODO: Investiage ways of speeding this - complexity is O(n)
     for model in models:
         target = simhash(hash=long(model.simhash))
+        if long(target) == long(_hash): continue
         similarity = _hash.similarity(target)
         if similarity >= similarity_threshold:
             scores.append((model.id, similarity))
