@@ -2,22 +2,12 @@ import logging as logger
 from flask import abort, jsonify, request
 from hashes.simhash import simhash
 
-from dssg import db
-from dssg.Machine import Machine
+from dssg import db, machine
 from dssg.model import *
 from dssg.webapp import app
 
 similarity_threshold = 0.875
 max_similar_messages = 5
-
-#--- This is a place holder.
-#- creating a new machine object should be done whenever the server is set up.
-#- then, it should maintain that machine object. Of course, we would want to constantly back up
-#- machine object in case there is a server outage or something (or, we can write a machine
-#- constructor that assumes that it is continuing from in the middle of deployment)
-# TODO change PATHTOBEMODIFIED to be the base directory of the software package
-categoryClassifier = loadPickle(PATHTOBEMODIFIED + '/dssg/data/classifier/election_v000.pkl');
-machine = Machine(categoryClassifier)
 
 @app.route('/v1/language', methods=['POST'])
 def detect_language():

@@ -1,0 +1,15 @@
+import sys
+from os.path import abspath, dirname, realpath
+
+# Append the application path to the system path
+app_path = dirname(abspath(__file__))
+sys.path.append(app_path)
+
+from dssg import load_config
+from dssg.webapp import app as application
+
+config_file = app_path + '/dssg/config/dssg.ini'
+load_config(application, config_file)
+
+# Import the API endpoints
+from dssg.webapp.rest_api import *

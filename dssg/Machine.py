@@ -4,9 +4,9 @@
 from hashes.simhash import simhash
 from pprint import pprint
 
-from .util import *
-from .vectorizer import *
-from .classifier import *
+from util import *
+from vectorizer import *
+from classifier import *
 
 # import MicrosoftTranslatorApi
 import guess_language
@@ -64,7 +64,7 @@ class Machine(object):
         output: none
         errors: AssertionError if unpickled object is not valid class
         """
-        with open(infile, 'rb') as f
+        with open(infile, 'rb') as f:
             mac = pickle.load(f)
             assert(isinstance(
                 mac, cls)), "Type of unpickled object must be Machine"
@@ -148,18 +148,14 @@ class Machine(object):
             and cannot be interpreted beyond (e.g., as probabilites).
         """
         assert (self._categoryClassifier is not None)
-                # TODO turn it into an exception
-
         messages = self._listify(messages)
 
         similarity_threshold = .875
-        # minimum_similar_messages = 5
         output = []
         for msg in messages:
             categories = self._categoryClassifier.predictProba(msg)
             similarity_computations = self.computeSimilarities(
                 msg)  # TODO change..
-            # pprint(similarity_computations[:10])
             similar_messages = [self._messageMap[sc[
                 0]] for sc in similarity_computations if sc[1] > similarity_threshold]
 
@@ -171,7 +167,6 @@ class Machine(object):
             }
 
             output.append(msg_metrics)
-            # pprint(msg_metrics)
 
         return output
 

@@ -9,5 +9,6 @@
 sqlalchemy.url = mysql://dssgweb:dssgweb@localhost/dssg_web
 sqlalchemy.pool_size = 5
 
-[logger]
-level = DEBUG
+[classifier]
+# Path to the trained classifier model
+classifier.file = /path/to/classifer.pkl
