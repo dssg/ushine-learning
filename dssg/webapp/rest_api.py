@@ -2,7 +2,7 @@ import logging as logger
 from flask import abort, jsonify, request
 from hashes.simhash import simhash
 
-from dssg import db, machine
+from dssg import db, category_classifier, Machine
 from dssg.model import *
 from dssg.webapp import app
 
@@ -100,26 +100,23 @@ def add_deployment():
 
     return jsonify(deployment.as_dict())
 
-@app.route('/v1/deployments/<int:deployment_id>/category', methods=['POST'])
+@app.route('/v1/deployments/<int:deployment_id>/suggest_categories',
+           methods=['POST'])
 def suggest_categories(deployment_id):
     """Given a message/report, suggests the possible categories
     that the message could fall into
     
     :param deployment_id: the id of the deployment
     """
+    if category_classifier is None:
+        app.logger.error("The category classifier is unavailable")
+        return
 
-    # TODO read message and make it up as follows.
-    # FIXME
-    msg = {'title': 'this is a title', 'description': 'this is a description'}
-    return machine.predictProba(msg);
-
-    # if not request.json:
-    #     abort(400)
-    # # Does the deployment exist
-    # deployment = Deployment.by_id(deployment_id)
-    # if not deployment:
-    #     abort(404)
-    # pass
+    verify_deployment(deployment_id)
+    if not request.json and not 'text' in request.json:
+        abort(400)
+    categoeries = category_classifier.predictProba(request.json['text'])
+    return jsonify({'categories': categories})
 
 @app.route('/v1/deployments/<int:deployment_id>/messages', methods=['POST'])
 def add_message(deployment_id):

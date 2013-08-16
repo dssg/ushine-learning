@@ -4,13 +4,12 @@ import os
 from flask.ext.sqlalchemy import SQLAlchemy
 
 import util
+from classifier import DssgCategoryClassifier
 from Machine import Machine
 
-# Database
 db = None
-
-# Machine object initialized with a trained classifier
 machine = None
+category_classifier = None
 
 def load_config(app, config_file):
     """Loads the configuration from the specified file and sets the
@@ -19,7 +18,7 @@ def load_config(app, config_file):
     :param app: the flask application object
     :param config_file: the absolute path to the configuration file
     """
-    global db, machine
+    global db, machine, category_classifier
 
     config = ConfigParser.SafeConfigParser()
     
@@ -47,6 +46,12 @@ def load_config(app, config_file):
     if not classifier_file is None:
         if os.path.exists(classifier_file):
             category_classifier = util.load_pickle(classifier_file)
+            if not isinstance(category_classifier, DssgCategoryClassifier):
+                app.logger.error("Invalid classifier object type: %s" %
+                    type(category_classifier))
+                category_classifier = None
+                return
+            # Proceed
             machine = Machine(category_classifier)
         else:
             app.logger.info("The classifier file '%s' does not exist" %

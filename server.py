@@ -13,7 +13,6 @@ dssg.load_config(app, config_file)
 # Import the API endpoints
 from dssg.webapp.rest_api import *
 
-
 if __name__ == "__main__":
     app.debug = True
     app.run()
