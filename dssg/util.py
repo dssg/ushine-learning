@@ -17,6 +17,9 @@ uchaguziCategoryJsonPath = 'data/processed/uchaguzi_new_categories.json'
 # Pickle
 ################################################################################
 
+def loadPickle(fileName):
+    return load_pickle(fileName)
+
 def load_pickle(fileName):
   """ load a pickle file. Assumes that it has one dictionary object that points to
  many other variables."""
