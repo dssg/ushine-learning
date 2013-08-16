@@ -5,7 +5,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 import util
 from classifier import DssgCategoryClassifier
-from Machine import Machine
+from machine import Machine
 
 db = None
 machine = None
