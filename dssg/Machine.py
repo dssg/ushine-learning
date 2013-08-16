@@ -148,25 +148,20 @@ class Machine(object):
         messages = self._listify(messages)
 
         similarity_threshold = .875
-        # minimum_similar_messages = 5
         output = []
         for msg in messages:
             categories = self._categoryClassifier.predictScore(msg)
             similarity_computations = self.computeSimilarities(
                 msg)  # TODO change..
-            # pprint(similarity_computations[:10])
             similar_messages = [self._messageMap[sc[
                 0]] for sc in similarity_computations if sc[1] > similarity_threshold]
 
             msg_metrics = {
-                # 'languages': self.guess_language(),
                 'categories': categories,
-                # 'entities': self.guess_entities(),
                 'similar_messages': similar_messages,
             }
 
             output.append(msg_metrics)
-            # pprint(msg_metrics)
 
         return output
 
