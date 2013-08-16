@@ -13,7 +13,6 @@ itsdangerous==0.21
 microsofttranslator==0.4
 nltk==2.0.4
 nose==1.3.0
-#numpy
 pandas
 pep8==1.4.6
 pyparsing==1.5.7
@@ -29,3 +28,4 @@ tornado==3.0.2
 wsgiref==0.1.2
 sqlalchemy==0.8.0
 Flask-SQLAlchemy==1.0
+ipdb==0.7

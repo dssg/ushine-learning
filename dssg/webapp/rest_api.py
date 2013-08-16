@@ -2,8 +2,7 @@ import logging as logger
 from flask import abort, jsonify, request
 from hashes.simhash import simhash
 
-from dssg import db
-from dssg.Machine import Machine
+from dssg import db, machine
 from dssg.model import *
 from dssg.webapp import app
 
@@ -108,6 +107,12 @@ def suggest_categories(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
+
+    # TODO read message and make it up as follows.
+    # FIXME
+    msg = {'title': 'this is a title', 'description': 'this is a description'}
+    return machine.predictProba(msg);
+
     # if not request.json:
     #     abort(400)
     # # Does the deployment exist
