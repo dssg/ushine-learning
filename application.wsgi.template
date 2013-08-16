@@ -1,8 +1,8 @@
 import sys
-from os.path import abspath, dirname, realpath
+from os.path import dirname, realpath
 
 # Append the application path to the system path
-app_path = dirname(abspath(__file__))
+app_path = dirname(realpath(__file__))
 sys.path.append(app_path)
 
 from dssg import load_config
