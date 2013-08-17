@@ -144,7 +144,7 @@ class DssgBinaryClassifierSVC(DssgBinaryClassifier):
         return scoreDic;
 
     def predictProba(self, message):
-        featVec = self._dssgVectorizer.transform([message]);
+        featVec = self._vectorizer.transform([message]);
         df = self._classifier.decision_function(featVec)
         prb = platt.SigmoidPredict(df, self._plattModel)
         probaDic = {}
@@ -155,7 +155,8 @@ class DssgBinaryClassifierSVC(DssgBinaryClassifier):
 
  
     def __repr__(self):
-        return self.__class__.__name__ + '(_vectorizer=%s, _classifier=%s)'%(self._dssgVectorizer, self._classifier)
+        return '%s (_vectorizer=%s, _classifier=%s)' % \
+            (self.__class__.__name__, self._dssgVectorizer, self._classifier)
 
     pass
 
