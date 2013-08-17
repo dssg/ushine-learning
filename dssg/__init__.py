@@ -45,7 +45,8 @@ def load_config(app, config_file):
     classifier_file = config.get("classifier", "classifier.file")
     if not classifier_file is None:
         if os.path.exists(classifier_file):
-            category_classifier = util.load_pickle(classifier_file)
+            _dict = util.load_pickle(classifier_file)
+            category_classifier = _dict['categoryClassifier']
             if not isinstance(category_classifier, DssgCategoryClassifier):
                 app.logger.error("Invalid classifier object type: %s" %
                     type(category_classifier))
