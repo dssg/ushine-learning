@@ -108,14 +108,16 @@ def suggest_categories(deployment_id):
     
     :param deployment_id: the id of the deployment
     """
+    if not request.json:
+        abort(400)
     if category_classifier is None:
         app.logger.error("The category classifier is unavailable")
         return
-
     verify_deployment(deployment_id)
-    if not request.json and not 'text' in request.json:
+    _post = request.json
+    if not 'title' in _post and not 'description' in _post:
         abort(400)
-    categoeries = category_classifier.predictProba(request.json['text'])
+    categories = category_classifier.predictProba(_post)
     return jsonify({'categories': categories})
 
 @app.route('/v1/deployments/<int:deployment_id>/messages', methods=['POST'])
