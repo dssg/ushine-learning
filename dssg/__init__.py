@@ -3,7 +3,7 @@ import os
 
 from flask.ext.sqlalchemy import SQLAlchemy
 
-import util
+import util as util
 from classifier import DssgCategoryClassifier
 from machine import Machine
 

@@ -2,7 +2,7 @@ import logging as logger
 from flask import abort, jsonify, request
 from hashes.simhash import simhash
 
-from dssg import db, category_classifier, Machine
+from dssg import db, category_classifier, Machine, util
 from dssg.model import *
 from dssg.webapp import app
 
@@ -26,7 +26,7 @@ def compute_similarities(text, models, count=None):
     :param count: The no. of similar items to return
     """
     # Get the simhash of the submitted message
-    _hash = simhash(text)
+    _hash = simhash(util.unicodeToAscii(text))
     candidates, scores = {}, []
 
     # TODO: Investiage ways of speeding this - complexity is O(n)
@@ -140,7 +140,7 @@ def add_message(deployment_id):
     if deployment is None:
         abort(404)
 
-    _hash = simhash(_post['content'])
+    _hash = simhash(util.unicodeToAscii(_post['content']))
     message = Message(deployment_id=deployment_id,
                       origin_message_id=_post['origin_message_id'],
                       content=_post['content'],
@@ -243,7 +243,7 @@ def add_report(deployment_id):
         abort(400)
 
     # Compute the simhash on the report description
-    _hash = simhash(_post['description'])
+    _hash = simhash(util.unicodeToAscii(_post['description']))
     report=Report(deployment_id=deployment_id,
                   origin_report_id=_post['origin_report_id'],
                   title=_post['title'],
