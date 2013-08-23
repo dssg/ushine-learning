@@ -15,6 +15,8 @@ import ipdb;
 import pprint
 
 
+
+
 class TooSkewedLabelsException(Exception):
     def __init__(self):
         pass
@@ -31,7 +33,6 @@ class DssgBinaryClassifier(object):
     def __init__(self):
         pass
 
-    @staticmethod
     def train(binaryLabeledMessageList):
         """ labels should be 'pos'/'neg'
         """
@@ -53,18 +54,17 @@ class DssgBinaryClassifierMajorityVote(DssgBinaryClassifier):
     """
     Majority vote classifier.
     """
-    def __init__(self, posNegPrbDic):
-        self._posNegPrbDic = posNegPrbDic;
+    def __init__(self):
+        self._posNegPrbDic = {}
 
-    @staticmethod
-    def train(binaryLabeledMessageList):
+    def train(self, binaryLabeledMessageList):
         nPos = countTruth(lambda x: x[1] == 'pos', binaryLabeledMessageList)
         nNeg = countTruth(lambda x: x[1] == 'neg', binaryLabeledMessageList)
         assert(nPos + nNeg == len(binaryLabeledMessageList));
         posNegPrbDic = {'pos': float(nPos) / (nPos+nNeg), 'neg': float(nNeg) / (nPos+nNeg)}
         
-        dssgClassifier = DssgBinaryClassifierMajorityVote(posNegPrbDic);
-        return dssgClassifier;
+        self._posNegPrbDic = posNegPrbDic;
+        pass
     
     def predictScore(self, message):
         """
@@ -75,53 +75,40 @@ class DssgBinaryClassifierMajorityVote(DssgBinaryClassifier):
         scoreDic['neg'] = (self._posNegPrbDic['neg']-.5)
         return self._posNegPrbDic;
 
+    def predictProba(self, message):
+        return self._posNegPrbDic;
+
     def __repr__(self):
         return self.__class__.__name__ + '(pos = %.3f, neg = %.3f)'%(self._posNegPrbDic['pos'],self._posNegPrbDic['neg'])
 
     pass
 
-# class DssgBinaryClassifierNaiveBayes(DssgBinaryClassifier):
-#     def __init__(self, nbClassifier):
-#         self._nbClassifier = nbClassifier;
-#         pass
-# 
-#     @classmethod
-#     def train(cls, binaryLabeledMessageList):
-#         tmp = map(lambda x: (cls._getFeatures(x[0]),x[1]), binaryLabeledMessageList);
-#         nbClassifier = NaiveBayesClassifier.train(tmp);
-#         dssgClassifier = DssgBinaryClassifierNaiveBayes(nbClassifier)
-#         return dssgClassifier;
-#     
-#     def predictScore(self, message):
-#         probs = self._nbClassifier.prob_classify(self._getFeature(message))
-#         return {'pos':probs.prob('pos'), 'neg':probs.prob('neg')}
-# 
-#     @staticmethod
-#     def _getFeatures(text):
-#         return bagOfWordsExceptStopwords(getWords(text.lower()))
-# 
-#     pass
-
-
 class DssgBinaryClassifierSVC(DssgBinaryClassifier):
-    def __init__(self, classifier, dssgVectorizer, plattModel):
-        assert(isinstance(dssgVectorizer, DssgVectorizer))
-        self._classifier = classifier
-        self._dssgVectorizer = dssgVectorizer
-        self._plattModel = plattModel
 
-    @classmethod
-    def train(cls, binaryLabeledMessageList, dssgVectorizer, balance=False, C=1.0, tol=1e-3):
-        msgList = map(lambda x: x[0], binaryLabeledMessageList)
-        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, binaryLabeledMessageList));
-        X = dssgVectorizer.fitTransform(msgList);
+    def __init__(self, vectorizer, balance=False, C=1.0, tol=1e-3):
+        self._vectorizer = vectorizer
+        self._balance = balance
+        self._C = C
+        self._tol = tol
+
+        self._classifier = None
+        self._plattModel = None
+
+    def train(self, messageList):
+        #--- prepare variables
+        vectorizer = self._vectorizer
+        balance = self._balance
+        C = self._C
+        tol = self._tol
+
+        #--- 
+        msgList = map(lambda x: x[0], messageList)
+        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, messageList));
+        X = vectorizer.fitTransform(msgList);
         
-        if (balance==True):
-            classifier = LinearSVC(C=C, loss='l2', penalty='l1', dual=False, tol=tol,\
-                    random_state=0, class_weight='auto')
-        else:
-            classifier = LinearSVC(C=C, loss='l2', penalty='l1', dual=False, tol=tol,\
-                    random_state=0)
+        class_weight = 'auto' if balance==True else None
+        classifier = LinearSVC(C=C, loss='l2', penalty='l1', dual=False, tol=tol,\
+                    random_state=0, class_weight=class_weight)
 
         classifier.fit(X, y)
 
@@ -131,12 +118,13 @@ class DssgBinaryClassifierSVC(DssgBinaryClassifier):
         [A,B] = platt.SigmoidTrain(yDeci, yy)
         plattModel = [A,B];
 
-        #- create dssgClassifier
-        dssgClassifier = cls(classifier, dssgVectorizer, plattModel);
-        return dssgClassifier;
+        #- save to instance variable
+        self._classifier = classifier
+        self._plattModel = plattModel
+        pass
 
     def predictScore(self, message):
-        featVec = self._dssgVectorizer.transform([message]);
+        featVec = self._vectorizer.transform([message]);
         df = self._classifier.decision_function(featVec)
         scoreDic = {};
         scoreDic['pos'] = df[0];
@@ -151,39 +139,44 @@ class DssgBinaryClassifierSVC(DssgBinaryClassifier):
         probaDic['pos'] = prb;
         probaDic['neg'] = 1-prb;
         return probaDic;
-        assert False 
 
  
     def __repr__(self):
-        return '%s (_vectorizer=%s, _classifier=%s)' % \
-            (self.__class__.__name__, self._dssgVectorizer, self._classifier)
+        return self.__class__.__name__ + '(_vectorizer=%s, _classifier=%s, _balance=%s, _C=%f, _tol=%f)'%(self._vectorizer, self._classifier, self._balance, self._C, self._tol)
 
     pass
 
 class DssgBinaryClassifierLogisticRegression(DssgBinaryClassifier):
-    def __init__(self, classifier, dssgVectorizer):
-        assert(isinstance(dssgVectorizer, DssgVectorizer));
-        self._classifier = classifier;
-        self._dssgVectorizer = dssgVectorizer;
+    def __init__(self, vectorizer, balance=False, C=1.0, tol=1e-3):
+        self._vectorizer = vectorizer
+        self._balance = balance
+        self._C = C
+        self._tol = tol
 
-    @classmethod
-    def train(cls, binaryLabeledMessageList, dssgVectorizer, balance=False, C=1.0, tol=1e-3):
-        msgList = map(lambda x: x[0], binaryLabeledMessageList)
-        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, binaryLabeledMessageList));
-        X = dssgVectorizer.fitTransform(msgList);
+        self._classifier = None
+
+    def train(self, messageList):
+        #--- prepare variables
+        vectorizer = self._vectorizer
+        balance = self._balance
+        C = self._C
+        tol = self._tol
+
+        msgList = map(lambda x: x[0], messageList)
+        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, messageList));
+        X = vectorizer.fitTransform(msgList);
         
-        if (balance==True):
-            classifier = LogisticRegression(C=C, penalty="l2", dual=False, tol=tol, random_state=0, class_weight='auto')
-        else:
-            classifier = LogisticRegression(C=C, penalty="l2", dual=False, tol=tol, random_state=0)
+        class_weight = 'auto' if balance==True else None
+        classifier = LogisticRegression(C=C, penalty="l2", dual=False, tol=tol, random_state=0, class_weight=class_weight)
 
         classifier.fit(X, y)
 
-        dssgClassifier = cls(classifier, dssgVectorizer);
-        return dssgClassifier;
+        #- save to instance variable
+        self._classifier = classifier
+        pass
 
     def predictScore(self, message):
-        featVec = self._dssgVectorizer.transform([message]);
+        featVec = self._vectorizer.transform([message]);
         df = self._classifier.decision_function(featVec)
         scoreDic = {};
         scoreDic['pos'] = df[0];
@@ -191,7 +184,7 @@ class DssgBinaryClassifierLogisticRegression(DssgBinaryClassifier):
         return scoreDic;
 
     def predictProba(self, message):
-        featVec = self._dssgVectorizer.transform([message]);
+        featVec = self._vectorizer.transform([message]);
         ret = self._classifier.predict_proba(featVec)
         probaDic = {}
         probaDic['pos'] = ret[0][1];
@@ -199,7 +192,7 @@ class DssgBinaryClassifierLogisticRegression(DssgBinaryClassifier):
         return probaDic;
 
     def __repr__(self):
-        return self.__class__.__name__ + '(_vectorizer=%s, _classifier=%s)'%(self._dssgVectorizer, self._classifier)
+        return self.__class__.__name__ + '(_vectorizer=%s, _classifier=%s, _balance=%s, _C=%f, _tol=%f)'%(self._vectorizer, self._classifier, self._balance, self._C, self._tol)
 
     pass
 
@@ -208,19 +201,24 @@ class DssgBinaryClassifierAdaptiveInterpolation(DssgBinaryClassifier):
     """
     predicts by "(1-alpha)*f_{global} * alpha*f_{local}"
     """
-    def __init__(self, globalClassifier, localClassifier, alpha, trainLog):
-        self._globalClassifier = globalClassifier;
-        self._localClassifier = localClassifier;
-        self._alpha = alpha;
-        self._trainLog = trainLog;
+    # TODO implement __repr__
 
-    @classmethod
-    def train(cls, binaryLabeledMessageList, globalClassifier, binaryClassifierTrainer):
+    def __init__(self, globalClassifier, untrainedLocalClassifier):
+        self._globalClassifier = globalClassifier
+        self._localClassifier = untrainedLocalClassifier;
+
+        self._alpha = None;
+        self._trainLog = None;
+        self._plattModel = None
+
+    def train(self, messageList):
+        globalClassifier = self._globalClassifier
+        localClassifier = self._localClassifier
         trainLog = ""
         nFolds = 5;
 
-        msgList = map(lambda x: x[0], binaryLabeledMessageList)
-        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, binaryLabeledMessageList));
+        msgList = map(lambda x: x[0], messageList)
+        y = np.array(map(lambda x: 1 if x[1] == 'pos' else 0, messageList));
 
         #--- obtain global decision function list
         globalDFList = [];
@@ -230,20 +228,20 @@ class DssgBinaryClassifierAdaptiveInterpolation(DssgBinaryClassifier):
 
         tt = tic();
         #--- obtain local decision function list (by cross-prediction)
-        localClassifier = None;
         if (sum(y) < 2):
-            #--- if there are less than 2 data points, set alpha=0
-            trainLog += "There are less than 2 data points. setting maxAlpha=0\n"
+            #--- if there are less than 2 positive data points, set alpha=0
+            trainLog += "There are less than 2 positive data points. setting maxAlpha=0\n"
             maxAlpha=0
         else:
             #--- split into 5 and cross-predict decision function
-            localDFList = [float('nan')]*len(binaryLabeledMessageList);
+            localDFList = [float('nan')]*len(messageList);
             folds = StratifiedKFold(y, nFolds);
             for trainIdx, testIdx in folds:
-                train = [binaryLabeledMessageList[i] for i in trainIdx]
-                test = [binaryLabeledMessageList[i] for i in testIdx]
+                train = [messageList[i] for i in trainIdx]
+                test = [messageList[i] for i in testIdx]
 
-                tmpClassifier = binaryClassifierTrainer(train)
+                tmpClassifier = copy.deepcopy(localClassifier)
+                tmpClassifier.train(train)
 
                 curDFList = [];
                 for x in test:
@@ -279,13 +277,24 @@ class DssgBinaryClassifierAdaptiveInterpolation(DssgBinaryClassifier):
             trainLog += "chosen alpha by median = %.3f\n"%maxAlpha;
     
             #--- train local classifier using all data 
-            localClassifier = binaryClassifierTrainer(binaryLabeledMessageList)
+            localClassifier.train(binaryLabeledMessageList)
 
         elapsed = toc(tt)
         trainLog += "Time taken for training: %.3f (sec)\n" % elapsed
 
-        dssgClassifier = cls(globalClassifier, localClassifier, maxAlpha, trainLog);
-        return dssgClassifier;
+
+        self._localClassifier = localClassifier
+        self._alpha = maxAlpha;
+        self._trainLog = trainLog
+
+        #--- learn sigmoid
+        yDeci = [self.predictScore(msg)['pos'] for msg in messageList]
+        yy = [1 if v == 1 else -1 for v in y]
+        [A,B] = platt.SigmoidTrain(yDeci, yy)
+        plattModel = [A,B];
+
+        self._plattModel= plattModel
+        pass
 
     def predictScore(self, message):
         if (self._localClassifier == None):
@@ -302,21 +311,41 @@ class DssgBinaryClassifierAdaptiveInterpolation(DssgBinaryClassifier):
             scoreDic['neg'] = -df;
             return scoreDic;
 
-    #--- TODO HOW to do probablistic transformation?; I can still use Platt's method!!
+    def predictProb(self, message):
+        if (self._localClassifier == None):
+            return self._globalClassifier.predictProba(message);
+        else:
+            #--- compute interpolated decision value
+            globalDecisionFunction = self._globalClassifier.predictScore(message)['pos'];
+            localDecisionFunction = self._localClassifier.predictScore(message)['pos']; 
+            df = (1-self._alpha)*globalDecisionFunction + self._alpha*localDecisionFunction
+            prb = platt.SigmoidPredict(df, self._plattModel)
+            probaDic = {}
+            probaDic['pos'] = prb;
+            probaDic['neg'] = 1-prb;
+            return probaDic;
+
     pass
+
 
 class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
     """
     predicts by a training SVM on feature vector like [f_{global}, f_{local}]
     """
-    def __init__(self, globalClassifier, localClassifier, metaClassifier, trainLog):
-        self._globalClassifier = globalClassifier;
-        self._localClassifier = localClassifier;
-        self._metaClassifier = metaClassifier;
-        self._trainLog = trainLog;
 
-    @classmethod
-    def train(cls, binaryLabeledMessageList, globalClassifier, binaryClassifierTrainer):
+    def __init__(self, globalClassifier, untrainedLocalClassifier):
+        self._globalClassifier = globalClassifier
+        self._localClassifier = untrainedLocalClassifier
+
+        self._metaClassifier = None;
+        self._trainLog = None;
+        self._plattModel = None
+
+
+    def train(self, binaryLabeledMessageList):
+        globalClassifier = self._globalClassifier
+        localClassifier = self._localClassifier
+
         trainLog = ""
         nFolds = 5;
 
@@ -333,8 +362,8 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
         #--- obtain local decision function list (by cross-prediction)
         metaClassifier = None;
         if (sum(y) < 2):
-            #--- if there are less than 2 data points, set alpha=0
-            trainLog += "There are less than 2 data points. using globalClassifier as the classifier\n"
+            #--- if there are less than 2 positive data points, set alpha=0
+            trainLog += "There are less than 2 positive data points. using globalClassifier as the classifier\n"
             localClassifier=None;
         else:
             #--- split into 5 and cross-predict decision function
@@ -344,7 +373,8 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
                 train = [binaryLabeledMessageList[i] for i in trainIdx]
                 test = [binaryLabeledMessageList[i] for i in testIdx]
 
-                tmpClassifier = binaryClassifierTrainer(train)
+                tmpClassifier = copy.deepcopy(localClassifier)
+                tmpClassifier.train(train)
 
                 curDFList = [];
                 for x in test:
@@ -367,14 +397,23 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
             trainLog += "  intercept: %.6f\n" % (metaClassifier.intercept_)
 
             #--- train local classifier using all data 
-            localClassifier = binaryClassifierTrainer(binaryLabeledMessageList)
+            localClassifier.train(binaryLabeledMessageList)
             trainLog += "Trained a meta classifier"
 
         elapsed = toc(tt)
         trainLog += "Time taken for training: %.3f (sec)\n" % elapsed
 
-        dssgClassifier = cls(globalClassifier, localClassifier, metaClassifier, trainLog);
-        return dssgClassifier;
+        self._metaClassifier = metaClassifier;
+        self._trainLog = trainLog
+
+        #--- learn sigmoid
+        yDeci = [self.predictScore(msg)['pos'] for msg in binaryLabeledMessageList]
+        yy = [1 if v == 1 else -1 for v in y]
+        [A,B] = platt.SigmoidTrain(yDeci, yy)
+        plattModel = [A,B];
+
+        self._plattModel= plattModel
+        pass
 
     def predictScore(self, message):
         #--- if localClassifier is None, dont use it!!
@@ -392,6 +431,23 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
             scoreDic['pos'] = df;
             scoreDic['neg'] = -df;
         return scoreDic;
+
+    def predictProb(self, message):
+        if (self._localClassifier == None):
+            return self._globalClassifier.predictProba(message);
+        else:
+            #--- compute interpolated decision value
+            globalDecisionFunction = self._globalClassifier.predictScore(message)['pos'];
+            localDecisionFunction = self._localClassifier.predictScore(message)['pos']; 
+            testX = np.matrix([globalDecisionFunction, localDecisionFunction])
+            df = self._metaClassifier.decision_function(testX);
+
+            prb = platt.SigmoidPredict(df, self._plattModel)
+            probaDic = {}
+            probaDic['pos'] = prb;
+            probaDic['neg'] = 1-prb;
+            return probaDic;
+
     pass
 
 ################################################################################
@@ -406,23 +462,44 @@ class DssgCategoryClassifier(object):
     def getTrainStats(self):
         return self._trainStats;
     
-    def __init__(self, classifierDic, categoryList, trainStats):
-        self._classifierDic = classifierDic;
-        self._categoryList = categoryList;
-        self._trainStats = trainStats;
+#     def __init__(self, classifierDic, categoryList, trainStats):
+#         self._classifierDic = classifierDic;
+#         self._categoryList = categoryList;
+#         self._trainStats = trainStats;
+
+    def __init__(self, 
+                 untrainedBinaryClassifier, 
+                 untrainedBinaryClassifierDic = {},
+                 doCV=True, 
+                 verbose=True, 
+                 ):
+        if (len(untrainedBinaryClassifierDic) != 0): assert untrainedBinaryClassifier == None
+        self._binaryClassifier = untrainedBinaryClassifier
+        self._binaryClassifierDic = untrainedBinaryClassifierDic
+        self._doCV = doCV
+        self._verbose=verbose
+
+        self._classifierDic = {}
+        self._categoryList = []
+        self._trainStats = {}
+        pass
 
     def __repr__(self):
         return self.__class__.__name__ + '(_categoryList=%s, _classifierDic=%s)'%(self._categoryList, pprint.pformat(self._classifierDic))
 
-    @classmethod
-    def train(cls, binaryClassifierTrainer, messageList, doCV=True, verbose=True, globalBinaryClassifierDic = {}):
-        """ A constructor for a classifier.
+    def train(self, messageList):
+        """ 
         messageList is a list of message in dictionary. Major keys are 'title', 'description', and 'categories', and so on.
         """
+        binaryClassifierDic = self._binaryClassifierDic 
+        doCV = self._doCV
+        verbose = self._verbose
 
+        #--- set up logger.
         logger = logging.getLogger(__name__);
         ch = logging.StreamHandler()
         logger.setLevel(logging.INFO if verbose else logging.WARNING);
+        logger.info('  len(binaryClassifierDic) = %d', len(binaryClassifierDic))
 
         #--- Empty variables
         classifierDic = {};
@@ -431,27 +508,19 @@ class DssgCategoryClassifier(object):
         categorySet = set();
         for msg in messageList:
             categorySet.update(msg['categories']);
-        #- there might be extra categories in globalBinaryClassifierDic
-        categorySet.update(globalBinaryClassifierDic.keys())
+        #- there might be extra categories in binaryClassifierDic
+        categorySet.update(binaryClassifierDic.keys())
         categoryList = sorted(list(categorySet))
-
-        #--- if we do not see certain categories in the train set
-        #- we will use global classifier since we can't train
-        extraCategories = set(globalBinaryClassifierDic.keys()) - set(categoryList)
-        for cat in extraCategories:
-            classifierDic[cat] =  globalBinaryClassifierDic[cat]
 
         #--- for each category, train a binary classifier
         trainStats = {}
         totNTP = 0; totNFP = 0; totNTN = 0; totNFN = 0;
         for cat in categoryList:
             logger.info('Category: %s', cat);
-
-            if (cat in globalBinaryClassifierDic):
-                globalBinaryClassifier = globalBinaryClassifierDic[cat]
+            if (len(binaryClassifierDic) != 0):
+                binaryClassifier = binaryClassifierDic[cat];
             else:
-                globalBinaryClassifier = None
-            logger.info('  globalBinaryClassifier: %s', str(globalBinaryClassifier))
+                binaryClassifier = copy.deepcopy(self._binaryClassifier)
 
             #- turn into a binary labeled data
             dset = [];
@@ -476,9 +545,7 @@ class DssgCategoryClassifier(object):
             didCV = False;
             if (doCV):
                 try:
-                    cvResDic = dssgRunCV(binaryClassifierTrainer, 
-                                         dset, 
-                                         globalBinaryClassifier=globalBinaryClassifier)
+                    cvResDic = dssgRunCV(self._binaryClassifier, dset)
                     strList = ('nFolds', 'mean of accuracy', '95% confidence interval', 'precision', 'recall', 'f1')
                     msg = '%2d-CV: %s = %.3f, %s = [%.3f, %.3f]\n' % \
                             (cvResDic[strList[0]], strList[1], cvResDic[strList[1]], strList[2], cvResDic[strList[2]][0], cvResDic[strList[2]][1])
@@ -488,43 +555,41 @@ class DssgCategoryClassifier(object):
                     didCV = True;
                 except TooSkewedLabelsException:
                     msg = 'CV accuracy estimate is not available due to skewed labels. Skipping'
-#                     bContinue = True;
 
                 logger.info('  '+msg);
-#                 if (bContinue):
-#                     continue;
 
             statDic['CV stat'] = cvResDic;
             trainStats[cat] = statDic;
 
             #--- build a classifier using all data.
-            if (globalBinaryClassifier != None):
-                dssgClassifier = binaryClassifierTrainer(dset, globalBinaryClassifier);
+            if (isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveInterpolation) or
+                    isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveSVC)):
+                binaryClassifier.train(dset);
             else:
                 if (nPos == 0 or nNeg == 0):
-                    #- when only one label presents, do majority vote..
-                    dssgClassifier = DssgBinaryClassifierMajorityVote.train(dset);
+                    #- when only one label presents, create a majority vote classifier
+                    mvClassifier = DssgBinaryClassifierMajorityVote()
+                    mvClassifier.train(dset)
+                    binaryClassifier = mvClassifier
                 else:
-                    dssgClassifier = binaryClassifierTrainer(dset);
+                    binaryClassifier.train(dset);
 
             #- report vocabulary
-            if (isinstance(dssgClassifier, DssgBinaryClassifierAdaptiveInterpolation) or\
-                isinstance(dssgClassifier, DssgBinaryClassifierAdaptiveSVC) or\
-                isinstance(dssgClassifier, DssgBinaryClassifierMajorityVote)
+            if (isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveInterpolation) or\
+                isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveSVC) or\
+                isinstance(binaryClassifier, DssgBinaryClassifierMajorityVote)
                 ):
-                logger.info('  Can\'t get nVoca since the classifier is: %s', repr(dssgClassifier)); # TODO print out the type of classifier
+                logger.info('  Can\'t get nVoca since the classifier is: %s', repr(binaryClassifier)); 
             else:
-                nVoca = len(dssgClassifier._dssgVectorizer.getFeatureNameList())
+                nVoca = len(binaryClassifier._vectorizer.getFeatureNameList())
                 logger.info('  nVoca = %d', nVoca);
-                if (isinstance(dssgClassifier._dssgVectorizer, DssgMultiVectorizer)):
-                    logger.info('  Vectorizer: %s', repr(dssgClassifier._dssgVectorizer))
-#                     featureInfo = dssgClassifier._dssgVectorizer.getFeatureInfo()
-#                     logger.info('  Multi Vectorizer: %s', str(featureInfo));
+                if (isinstance(binaryClassifier._vectorizer, DssgMultiVectorizer)):
+                    logger.info('  Vectorizer: %s', repr(binaryClassifier._vectorizer))
 
             #- add classifier to classifier dictionary.
-            classifierDic[cat] = dssgClassifier;
+            classifierDic[cat] = binaryClassifier;
 
-            logger.info('  type = %s', str(type(dssgClassifier)))
+            logger.info('  type = %s', str(type(binaryClassifier)))
             if (didCV):
                 totNTP += statDic['CV stat']['nTP']
                 totNFP += statDic['CV stat']['nFP']
@@ -539,14 +604,16 @@ class DssgCategoryClassifier(object):
             logger.info('DID CV for categories: %s', str(didCVCategoryList));
 
             meanF1 = np.mean(np.array(map(lambda cat: trainStats[cat]['CV stat']['f1'], didCVCategoryList)))
-#            meanF1 = np.mean(np.array(map(lambda x: x['CV stat']['f1'], trainStats.values())))
             logger.info('Overall mean F1 = %.3f', meanF1);
 
             totPrecision = float(totNTP) / (totNTP + totNFP)
             totRecall = float(totNTP) / (totNTP + totNFN)
             logger.info('Overall aggregate prec = %.3f, recall = %.3f, F1 = %.3f', totPrecision, totRecall, sp.stats.hmean([totPrecision, totRecall]));
 
-        return cls(classifierDic, categoryList, trainStats)
+        self._classifierDic = classifierDic
+        self._categoryList = categoryList
+        self._trainStats = trainStats
+        pass
         
     def predictScore(self, message):
         """
@@ -577,10 +644,10 @@ class DssgCategoryClassifier(object):
 ################################################################################
 # Runs CV.
 ################################################################################
-def dssgRunCV(binaryClassifierTrainer, 
+def dssgRunCV(binaryClassifierObj, 
               dsetBinary, 
-              nFolds=5, 
-              globalBinaryClassifier=None):
+              nFolds=5):
+#              globalBinaryClassifier=None):
     """
     raise TooSkewedLabelsException when CV can't be done
 
@@ -604,11 +671,8 @@ def dssgRunCV(binaryClassifierTrainer,
         train = [dsetBinary[i] for i in trainIdx]
         test = [dsetBinary[i] for i in testIdx]
 
-        #-- train
-        if (globalBinaryClassifier != None):
-            binaryClassifier = binaryClassifierTrainer(train, globalBinaryClassifier);
-        else:
-            binaryClassifier = binaryClassifierTrainer(train)
+        binaryClassifier = copy.deepcopy(binaryClassifierObj)
+        binaryClassifier.train(train)
 
         #-- compute accuracy (or other stats?)
         predy = [];

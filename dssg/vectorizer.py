@@ -30,6 +30,7 @@ def bagOfWordsExceptStopwords(words, stopfile='english'):
 ################################################################################
 
 class DssgUnigramExtractor(object):
+    _cache = {}
     def __init__(self):
         self._tokenizer = TreebankWordTokenizer()
         self._stopwordSet = set(stopwords.words('english'))
@@ -39,50 +40,11 @@ class DssgUnigramExtractor(object):
         return self.__class__.__name__ + '()'; 
 
     def extract(self, text):
-        text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
-        text = nltk.clean_html(text);
-        tokens = self._tokenizer.tokenize(text)
-        
-        newTokens = []
-        for tok in tokens:
-            #- lowercase, remove '
-            tok = tok.lower().strip("`'.,-_*/:;\\!@#$%^&*()=\""); 
-
-            #- remove stopwords, one character word, only numbers
-            #- remove one character word
-            #- remove only numbers
-            if (tok in self._stopwordSet or len(tok) <= 1 or isAllNumbers(tok)):
-                continue
-
-            #- apply stemming
-#        oldTok = copy.deepcopy(tok); # for debug
-            tok = self._stemmer.stem(tok)
-            if (tok in self._stopwordSet): # sometimes a token is like 'theres' and becomes stopword after stemming
-                continue;
-
-            newTokens.append(tok);
-        return newTokens;
-
-class DssgBigramExtractor(object):
-    def __init__(self):
-        self._tokenizer = TreebankWordTokenizer()
-        self._stopwordSet = set(stopwords.words('english'))
-        self._stemmer = PorterStemmer();
-
-    def __repr__(self):
-        return self.__class__.__name__ + '()';
-    
-    def extract(self, text):
-        text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
-        text = nltk.clean_html(text);
-
-        sentenceList = nltk.tokenize.sent_tokenize(text)
-        bigrams = []
-        for sentence in sentenceList:
-            tokens = self._tokenizer.tokenize(sentence)
+        if (text not in DssgUnigramExtractor._cache):
+            text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
+            text = nltk.clean_html(text);
+            tokens = self._tokenizer.tokenize(text)
             
-            # Preprocessing
-            # print "text: %s" % (text,)
             newTokens = []
             for tok in tokens:
                 #- lowercase, remove '
@@ -95,20 +57,64 @@ class DssgBigramExtractor(object):
                     continue
 
                 #- apply stemming
+#        oldTok = copy.deepcopy(tok); # for debug
                 tok = self._stemmer.stem(tok)
                 if (tok in self._stopwordSet): # sometimes a token is like 'theres' and becomes stopword after stemming
                     continue;
 
                 newTokens.append(tok);
+            DssgUnigramExtractor._cache[text] = newTokens;
+        return DssgUnigramExtractor._cache[text];
+
+class DssgBigramExtractor(object):
+    _cache = {}
+    def __init__(self):
+        self._tokenizer = TreebankWordTokenizer()
+        self._stopwordSet = set(stopwords.words('english'))
+        self._stemmer = PorterStemmer();
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()';
+    
+    def extract(self, text):
+        if text not in DssgBigramExtractor._cache:
+            text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
+            text = nltk.clean_html(text);
+
+            sentenceList = nltk.tokenize.sent_tokenize(text)
+            bigrams = []
+            for sentence in sentenceList:
+                tokens = self._tokenizer.tokenize(sentence)
+                
+                # Preprocessing
+                # print "text: %s" % (text,)
+                newTokens = []
+                for tok in tokens:
+                    #- lowercase, remove '
+                    tok = tok.lower().strip("`'.,-_*/:;\\!@#$%^&*()=\""); 
+
+                    #- remove stopwords, one character word, only numbers
+                    #- remove one character word
+                    #- remove only numbers
+                    if (tok in self._stopwordSet or len(tok) <= 1 or isAllNumbers(tok)):
+                        continue
+
+                    #- apply stemming
+                    tok = self._stemmer.stem(tok)
+                    if (tok in self._stopwordSet): # sometimes a token is like 'theres' and becomes stopword after stemming
+                        continue;
+
+                    newTokens.append(tok);
+                
+                # Bigrams
+                curBigrams = nltk.bigrams(newTokens);
+                bigrams += curBigrams;
             
-            # Bigrams
-            curBigrams = nltk.bigrams(newTokens);
-            bigrams += curBigrams;
-        
-        # print "bigrams:"
-        # print bigrams
-        # raise
-        return bigrams
+            # print "bigrams:"
+            # print bigrams
+            # raise
+            DssgBigramExtractor._cache[text] = bigrams
+        return DssgBigramExtractor._cache[text]
 
 class DssgPosExtractor(object):
     def __init__(self):
