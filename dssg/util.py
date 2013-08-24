@@ -18,19 +18,20 @@ uchaguziCategoryJsonPath = 'data/processed/uchaguzi_new_categories.json'
 ################################################################################
 
 def loadPickle(fileName):
+    """ Load a pickle file. """
     return load_pickle(fileName)
 
 def load_pickle(fileName):
-  """ load a pickle file. Assumes that it has one dictionary object that points to
- many other variables."""
-  with open(fileName, 'rb') as f:
-    varDic = pickle.load(f);
-  return varDic;
+    """ Load a pickle file. """
+    with open(fileName, 'rb') as f:
+        varDic = pickle.load(f);
+    return varDic;
 
 def savePickle(var, fileName, protocol=0):
-  f = open(fileName, 'wb');
-  pickle.dump(var, f, protocol=protocol);
-  f.close();
+    """ Saves a pickle file """
+    f = open(fileName, 'wb');
+    pickle.dump(var, f, protocol=protocol);
+    f.close();
 
 ################################################################################
 # for CSV
@@ -95,6 +96,9 @@ class UnicodeWriter:
             self.writerow(row)
 
 def UnicodeDictReader(utf8_data, **kwargs):
+    """
+    DictReader that works with unicode.
+    """
     csv_reader = csv.DictReader(utf8_data, **kwargs)
     for row in csv_reader:
         yield dict([(key, unicode(value, 'utf-8')) for key, value in row.iteritems()])
@@ -106,7 +110,7 @@ def UnicodeDictReader(utf8_data, **kwargs):
 
 def tic():
     """
-    equivalent to Matlab's tic. It start measuring time.
+    Equivalent to Matlab's tic. It start measuring time.
     returns handle of the time start point.
     """
     global gStartTime
@@ -115,27 +119,34 @@ def tic():
 
 def toc(prev=None):
     """
-    get a timestamp in seconds. Time interval is from previous call of tic() to current call of toc().
+    Get a timestamp in seconds. Time interval is from previous call of tic() to current call of toc().
     You can optionally specify the handle of the time ending point.
     """
     if prev==None: prev = gStartTime;
     return (datetime.utcnow() - prev).total_seconds();
 
 def unicodeToAscii(unicodeStr):
-  s = copy.copy(unicodeStr)
-  while True:
-    try:
-      ret = codecs.encode(s, 'ascii');
-      return ret;
-    except UnicodeEncodeError as e:
-      s = s.replace(e.object[e.start:e.end], ' ');
-  return None;
+    """
+    Turns a unicode string to ascii code. When failing to do so for certain
+    characters, it replaces with a white space. This is particularly useful when
+    using simhash since it only works well for ascii code.
+    """
+    s = copy.copy(unicodeStr)
+    while True:
+        try:
+            ret = codecs.encode(s, 'ascii');
+            return ret;
+        except UnicodeEncodeError as e:
+            s = s.replace(e.object[e.start:e.end], ' ');
+    return None;
   
 def loadIncidentListFromCsv(path):
     """
-    returns a list of incidents. An incident is [incidentId, message, categoryIdList, categoryTitleList].
-    However, the categories may have duplicates. Duplicates are not meaningful and should be
-    removed, but I simply did not remove them in this function.
+    DEPRECATED
+    Returns a list of incidents. An incident is [incidentId, message,
+    categoryIdList, categoryTitleList].  However, the categories may have
+    duplicates. Duplicates are not meaningful and should be removed, but I
+    simply did not remove them in this function.
     """
     incidentList = [];
     with open(path,'r') as fp:
@@ -153,10 +164,14 @@ def loadIncidentListFromCsv(path):
             categoryTitleList = map(lambda x: x.strip(), row[3].split(','))
             assert(len(categoryIdList) == len(categoryTitleList));
    
-            incidentList.append([incidentId, message, categoryIdList, categoryTitleList])
+            incidentList.append([incidentId, message, categoryIdList,
+                categoryTitleList])
     return incidentList
 
 def getFullMessagesFromJson(path):
+    """
+    Read JSON report data from path. 
+    """
     with open(path,'r') as fp:
         data = json.load(fp)
         messageList = []
@@ -168,9 +183,16 @@ def getFullMessagesFromJson(path):
         return messageList;
 
 def countTruth(boolFunc, aList):
+    """ 
+    Counts the number of `True` value when applied `boolFunc` to each element in
+    `aList`
+    """
     return len(filter(boolFunc, aList));
 
 def isAllNumbers(aStr):
+    """
+    Returns True if `aStr` consists of all numbers
+    """
     aStr = aStr.strip();
     if (len(aStr) == countTruth(lambda x: x>='0' and x <= '9', aStr)):
         return True;
@@ -178,11 +200,17 @@ def isAllNumbers(aStr):
         return False;
 
 def loadJsonFromPath(path):
+    """
+    Load a JSON object from given `path`
+    """
     with open(path, 'r') as fp:
         data = json.load(fp)
     return data;
 
 def getFullMessagesFromUchaguziMergedCategory(uchaguziJsonPath, uchaguziCategoryJsonPath):
+    """ 
+    DEPRECATED
+    """
     messageList = getFullMessagesFromJson(uchaguziJsonPath)
     #- map 'Polling station logisitcal issues' to 'Polling Station Logisitcal Issues'
     #- remove duplicate category labels
@@ -242,6 +270,10 @@ def getFullMessagesFromUchaguziMergedCategory(uchaguziJsonPath, uchaguziCategory
     return messageList;
 
 def loadDatasetWithMappedCategories(dsetJsonPath, mappedCategoryPath):
+    """
+    Load a dataset while mapping specific categories to a more general,
+    and common categories.
+    """
     #---- read dataset
     messageList = getFullMessagesFromJson(dsetJsonPath)
     for msg in messageList:
