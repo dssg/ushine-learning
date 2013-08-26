@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from nose.tools import *
-from dssg.Machine import Machine
+from dssg.machine import Machine
 
 #
 # Setup / Teardown

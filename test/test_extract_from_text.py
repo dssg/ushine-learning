@@ -6,7 +6,7 @@ Verify private data stripping functionality
 """
 
 from nose.tools import *
-from dssg.Machine import Machine
+from dssg.machine import Machine
 
 
 #
