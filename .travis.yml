@@ -11,8 +11,8 @@ python:
 #   - EXAMPLE_VAR=1.2.3
 
 ##-- install dependencies
-# virtualenv:
-#   system_site_packages: true
+virtualenv:
+  system_site_packages: true
 
 before_install:
  - sudo apt-get install -qq python-numpy python-scipy
