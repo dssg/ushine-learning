@@ -2,14 +2,11 @@
 # do easy_install python-hashes to install (or visit
 # https://github.com/sangelone/python-hashes)
 from hashes.simhash import simhash
-from pprint import pprint
 
 from util import *
 from vectorizer import *
 from classifier import *
 
-# import MicrosoftTranslatorApi
-import guess_language
 import langid
 
 import nltk
@@ -17,16 +14,7 @@ import re
 
 import cPickle as pickle
 
-LANGUAGE_GUESS_OPTIONS = [
-    'microsoft',
-    'python_guess_language',
-    'langid',
-    'all'
-]
-LANGUAGE_GUESS_METHOD = LANGUAGE_GUESS_OPTIONS[2]
-
 LOCATION_ENTITIES = ['LOCATION', 'GPE', 'GSP']
-
 
 class Machine(object):
 
@@ -264,7 +252,12 @@ class Machine(object):
         if "phone_regex" in kwargs.keys():
             phone_regex = kwargs["phone_regex"]
 
-        return Machine._extract_entities(text) + \
+        entities = []
+        for entity_type in Machine._extract_entities(text):
+            for item in entity_type:
+                entities.append( (entity_type, item) )
+        
+        return entities + \
             Machine._extract_ids(text) + \
             Machine._extract_usernames(text) + \
             Machine._extract_emails(text) + \
@@ -281,6 +274,7 @@ class Machine(object):
                     item = chunk.node, ' '.join(c[0] for c in chunk.leaves())
                     entities_list.append(item)
 
+        # TODO: reconcile different types in guess_private_info and guess_entities / guess_location methods
         entities = {}
         for (group, entity) in entities_list:
             if not group in entities:
@@ -383,6 +377,7 @@ class Machine(object):
 #        self.train(messages)
 #
 #        return output
+
     def _listify(self, messages):
         """Allow argument to be a string or a list
         """
@@ -476,7 +471,6 @@ class Machine(object):
                 # Fails quietly... if cannot find parent, keeps self<->self
                 # mapping instead of self<->parent
 
-        # pprint(mapping)
         # print len(mapping.values())
         # print len(list(set(mapping.values())))
 
