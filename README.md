@@ -37,9 +37,11 @@ Works how. Serves recommendations in response to POST requests.
 
 ### **Ushahidi Plugin, for deployment on an Ushahidi crowdmap instance**
 
-Lives where.
+Location: https://github.com/ekala/Ushahidi_Web/tree/dssg-integration
 
-Works how.
+This is a PHP plugin that for he Ushahidi platform. Note: this plugin requires some core changes into the Ushahidi platform in order to show its results. We hope these changes will be incorporated into Ushahidi 2.x and 3.0.
+
+It functions by running the **Flask Webapp** on a server and making REST calls to the `rest_api`. These access the toolkit and machine learning functionality we provide. There is also a SQLAlchemy database that mirrors the important information from the Ushahidi app which we need for (1) updating the classifer and (2) detecting duplicate messages.
 
 ## Installation Guide
 
@@ -68,15 +70,23 @@ To get involved, please check the [issue tracker](https://github.com/dssg/ushine
 
 To get in touch, email the team at dssg-ushahidi@googlegroups.com.
 
-### Generating Documentation
+### Documentation
 
-Auto-generate api docs
+The latest documentation is available on [ReadTheDocs](https://ushine-learning.readthedocs.org/en/latest/).
+
+To update the documentation, you may do the following:
+
+_First, auto-generate the latest API docs_
 
 ```
 sphinx-apidoc -o doc/source dssg # -f to overwrite
 
 # sphinx-apidoc -o doc/source dssg -f && cd doc && make html && cd ..
 ```
+
+_Optionally: update the doc/source files directly_
+
+_Finally, 
 
 make HTML (from `docs/` path, where makefile resides)
  
