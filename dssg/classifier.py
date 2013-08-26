@@ -14,9 +14,6 @@ import scipy as sp;
 import ipdb;
 import pprint
 
-
-
-
 class TooSkewedLabelsException(Exception):
     def __init__(self):
         pass
@@ -76,6 +73,9 @@ class DssgBinaryClassifierMajorityVote(DssgBinaryClassifier):
         return self._posNegPrbDic;
 
     def predictProba(self, message):
+        """
+        This returns probability estimate for each class.
+        """
         return self._posNegPrbDic;
 
     def __repr__(self):
@@ -84,7 +84,9 @@ class DssgBinaryClassifierMajorityVote(DssgBinaryClassifier):
     pass
 
 class DssgBinaryClassifierSVC(DssgBinaryClassifier):
-
+    """
+    Linear SVM binary classifier (based on LibLinear).
+    """
     def __init__(self, vectorizer, balance=False, C=1.0, tol=1e-3):
         self._vectorizer = vectorizer
         self._balance = balance
@@ -147,6 +149,9 @@ class DssgBinaryClassifierSVC(DssgBinaryClassifier):
     pass
 
 class DssgBinaryClassifierLogisticRegression(DssgBinaryClassifier):
+    """
+    Linear logistic regression binary classifier (based on LibLinear).
+    """
     def __init__(self, vectorizer, balance=False, C=1.0, tol=1e-3):
         self._vectorizer = vectorizer
         self._balance = balance
@@ -200,8 +205,12 @@ class DssgBinaryClassifierLogisticRegression(DssgBinaryClassifier):
 class DssgBinaryClassifierAdaptiveInterpolation(DssgBinaryClassifier):
     """
     predicts by "(1-alpha)*f_{global} * alpha*f_{local}"
+    It takes a trained global classifier, and untrained (initialized) local classifier,
+    and then train local classifier and alpha.
     """
-    # TODO implement __repr__
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(_globalClassifier=%s, _localClassifier=%s, _alpha=%s)'%(self._globalClassifier, self._localClassifier, self._alpha)
 
     def __init__(self, globalClassifier, untrainedLocalClassifier):
         self._globalClassifier = globalClassifier
@@ -333,6 +342,9 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
     predicts by a training SVM on feature vector like [f_{global}, f_{local}]
     """
 
+    def __repr__(self):
+        return self.__class__.__name__ + '(_globalClassifier=%s, _localClassifier=%s, _metaClassifier=%s, _alpha=%s)'%(self._globalClassifier, self._localClassifier, self._metaClassifier, self._alpha)
+
     def __init__(self, globalClassifier, untrainedLocalClassifier):
         self._globalClassifier = globalClassifier
         self._localClassifier = untrainedLocalClassifier
@@ -455,17 +467,16 @@ class DssgBinaryClassifierAdaptiveSVC(DssgBinaryClassifier):
 ################################################################################
 
 class DssgCategoryClassifier(object):
+    """
+    A generic category classifier, which is simply an aggregate of binary
+    classifiers.
+    """
     _classifierDic = {};
     _categoryList = [];
     _trainStats = {};
 
     def getTrainStats(self):
         return self._trainStats;
-    
-#     def __init__(self, classifierDic, categoryList, trainStats):
-#         self._classifierDic = classifierDic;
-#         self._categoryList = categoryList;
-#         self._trainStats = trainStats;
 
     def __init__(self, 
                  untrainedBinaryClassifier, 
@@ -647,7 +658,6 @@ class DssgCategoryClassifier(object):
 def dssgRunCV(binaryClassifierObj, 
               dsetBinary, 
               nFolds=5):
-#              globalBinaryClassifier=None):
     """
     raise TooSkewedLabelsException when CV can't be done
 

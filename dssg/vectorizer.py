@@ -10,26 +10,17 @@ from nltk.stem import PorterStemmer
 from scipy.sparse import coo_matrix, hstack
 import numpy as np
 
-import ipdb
-
-def getWords(text):
-    return word_tokenize(text)
-
-def bagOfWords(words):
-    return dict([(word.lower(), True) for word in words])
-
-def bagOfWordsNotInSet(words, badwords):
-    return bagOfWords(set(words) - set(badwords))
-
-def bagOfWordsExceptStopwords(words, stopfile='english'):
-    badwords = stopwords.words(stopfile)
-    return bagOfWordsNotInSet(words, badwords)
-
 ################################################################################
 # UnigramExtractor
 ################################################################################
 
 class DssgUnigramExtractor(object):
+    """
+    An instance of this is used to obtain a list of unigrams, given a text.
+    Usages:
+    unigramExtractor = DssgUnigramExtractor()
+    tokenList = unigramExtractor.extract("here is a text as a string") # ['text', 'string']
+    """
     _cache = {}
     def __init__(self):
         self._tokenizer = TreebankWordTokenizer()
@@ -40,6 +31,9 @@ class DssgUnigramExtractor(object):
         return self.__class__.__name__ + '()'; 
 
     def extract(self, text):
+        """
+        Given a text, return a list of unigram tokens.
+        """
         if (text not in DssgUnigramExtractor._cache):
             text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
             text = nltk.clean_html(text);
@@ -67,6 +61,13 @@ class DssgUnigramExtractor(object):
         return DssgUnigramExtractor._cache[text];
 
 class DssgBigramExtractor(object):
+    """
+    An instance of this is used to obtain a list of bigrams, given a text.
+    Usages:
+    be = DssgUnigramExtractor()
+    be.extract("here is a text as a string and I am cool") 
+    # output: [('text', 'string'), ('string', 'cool')]
+    """
     _cache = {}
     def __init__(self):
         self._tokenizer = TreebankWordTokenizer()
@@ -77,6 +78,9 @@ class DssgBigramExtractor(object):
         return self.__class__.__name__ + '()';
     
     def extract(self, text):
+        """
+        returns a list of bigram tokens, given a text.
+        """
         if text not in DssgBigramExtractor._cache:
             text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
             text = nltk.clean_html(text);
@@ -116,58 +120,20 @@ class DssgBigramExtractor(object):
             DssgBigramExtractor._cache[text] = bigrams
         return DssgBigramExtractor._cache[text]
 
-class DssgPosExtractor(object):
-    def __init__(self):
-        self._tokenizer = TreebankWordTokenizer()
-        self._stopwordSet = set(stopwords.words('english'))
-        self._stemmer = PorterStemmer();
-
-    def __repr__(self):
-        return self.__class__.__name__ + '()';
-    
-    def extract(self, text):
-        text = text.replace("&lt;", "<").replace("&gt;", ">").replace('&quot;', '"').replace('&amp;', '&').replace('&nbsp;', ' ')
-        text = nltk.clean_html(text);
-        tokens = self._tokenizer.tokenize(text)
-
-        assert False, "modify so it first do sent_tokenize()"
-        # Preprocessing
-        # print "text: %s" % (text,)
-        newTokens = []
-        for tok in tokens:
-            #- lowercase, remove '
-            # tok = tok.lower().strip("`'.,-_*/:;\\!@#$%^&*()=\""); 
-
-            #- remove stopwords, one character word, only numbers
-            #- remove one character word
-            #- remove only numbers
-            if (tok in self._stopwordSet or len(tok) <= 1 or isAllNumbers(tok)):
-                continue
-
-            #- apply stemming
-            tok = self._stemmer.stem(tok)
-            if (tok in self._stopwordSet): # sometimes a token is like 'theres' and becomes stopword after stemming
-                continue;
-
-            newTokens.append(tok);
-
-        #--- POS Tags
-        posTags = nltk.pos_tag(newTokens)
-        # print "pos tags:"
-        # print posTags
-        # raise
-        return posTags
-
 ################################################################################
 # Vectorizer
 ################################################################################
 
 class DssgVectorizer(object):
+    """
+    Abstract class for vectorizer classes. In general, "messageList" arguments
+    expect to have 'title' and 'text' as keys, and corresponding content strings
+    as values.
+    """
     def __init__(self):
         pass
 
     def fitTransform(self, messageList):
-        #- find unigram, compute length, POS tagging and so on...
         raise NotImplementedError("");
 
     def transform(self, messageList):
@@ -179,31 +145,40 @@ class DssgVectorizer(object):
     pass
 
 class DssgMultiVectorizer(DssgVectorizer):
+    """
+    A multi vectorizer which concatenates multiple vectorizers to form
+    a single vectorizer. In general, "messageList" arguments expect to have
+    'title' and 'text' as keys, and corresponding content strings as values.
+    """
     _vectorizers = None
     _unigramCountDic = {}   # TODO: Remove this or make an accessor for this if needed, just to prevent crash in test_featureEngineering.py when calling
                             # vocaDic = vectorizer._unigramCountDic;
 
     def __init__(self, vectorizers=[]):
-        # for v in vectorizers:
-        #     print v
-
+        """ Initializes with a list of other vectorizers """
         self._vectorizers = vectorizers
 
     def __repr__(self):
-        return self.__class__.__name__ + '(_vectorizers=%s)' % (repr(self._vectorizers))
+        return self.__class__.__name__ + '(_vectorizers=%s)' %\
+                (repr(self._vectorizers))
 
     def fitTransform(self, messageList):
+        """ Fit a vectorizer using given messageList, and transform it into a 
+        matrix where each row corresponds to an instance (=message)
+        """
         return self._hstack_vectors("fitTransform", messageList)
 
     def transform(self, messageList):
+        """
+        Assuming the vectorizer is already fitted, transforms given messageList
+        into a matrix where each row corresponds to an instance (=message)
+        """
         return self._hstack_vectors("transform", messageList)
 
     def _hstack_vectors(self, method, messageList):
-        # create base vector, to append other vectorizations
-        # Todo: pass actual method to call in vectorizer
-        
-        # baseVector = coo_matrix([[0]*len(messageList)]).T
-        # combined_vectors = baseVector
+        """
+        create base vector, to append other vectorizations
+        """
         combined_vectors = None
         for v in self._vectorizers:
             # Todo: pass actual method to call in vectorizer
@@ -215,16 +190,15 @@ class DssgMultiVectorizer(DssgVectorizer):
             if combined_vectors is None:
                 combined_vectors = output_vector
             else:
-                # print output_vector.todense()
-                # print combined_vectors.todense()
-                # ipdb.set_trace()
                 combined_vectors = hstack([combined_vectors, output_vector])
 
         return combined_vectors
 
     def getFeatureNameList(self):
-        # merge the who feature names lists
-        # the indexes of 2nd vectorization need to be += the column count of the 1st vectorization, and so on...
+        """
+        Merge the who feature names lists. The indexes of 2nd vectorization 
+        need to be += the column count of the 1st vectorization, and so on...
+        """
         featureNameList = []
         for v in self._vectorizers:
             featureNameList.extend(v.getFeatureNameList())
@@ -232,6 +206,10 @@ class DssgMultiVectorizer(DssgVectorizer):
         return featureNameList
 
     def getFeatureInfo(self):
+        """
+        Obtain a string containing feature information (namely, string 
+        representation and the number of features)
+        """
         aList = []
         for v in self._vectorizers:
             aList.append((str(v), len(v.getFeatureNameList())))
@@ -240,6 +218,13 @@ class DssgMultiVectorizer(DssgVectorizer):
     pass
 
 class DssgVectorizerTfIdf(DssgVectorizer):
+    """
+    Vectorizer that takes in either a DssgUnigramExtractor instance or
+    DssgBigramExtractor instance, and use it to extract a basic token
+    unit. Then, applies TF-IDF normalization to transform to vectors.
+    In general, "messageList" arguments expect to have 'title' and 'text' as
+    keys, and corresponding content strings as values.                              
+    """
     def __init__(self, ngramExtractor, minFreq=1):
         self._ngramExtractor = ngramExtractor;
         self._minFreq = minFreq;
@@ -259,8 +244,6 @@ class DssgVectorizerTfIdf(DssgVectorizer):
         cache = []
         for msg in messageList: 
             unigramList = self._ngramExtractor.extract(msg['title'] + ' ' + msg['description']);
-#            unigramList = self._extractUnigramFunc( msg['description']);
-#            unigramList = self._extractUnigramFunc( msg['title']);
             cache.append(unigramList);
             for unigram in unigramList:
                 if (unigram not in unigramCountDic):
@@ -300,8 +283,6 @@ class DssgVectorizerTfIdf(DssgVectorizer):
 
         for i in range(len(messageList)):
             msg = messageList[i]['title'] + ' ' + messageList[i]['description'];
-#            msg = messageList[i]['description'];
-#            msg = messageList[i]['title'];
             row = {};
             if (cache != None): unigramList = cache[i];
             else:               unigramList = self._ngramExtractor.extract(msg);
@@ -341,6 +322,13 @@ class DssgVectorizerTfIdf(DssgVectorizer):
 
  
 class DssgVectorizerCount(DssgVectorizer):
+    """
+    Vectorizer that takes in either a DssgUnigramExtractor instance or
+    DssgBigramExtractor instance, and use it to extract a basic token unit.
+    Then, simply counts each tokens to transform to vectors.  In general,
+    "messageList" arguments expect to have 'title' and 'text' as keys, and
+    corresponding content strings as values.                              
+    """
     def __init__(self, ngramExtractor, minFreq=1):
         self._ngramExtractor = ngramExtractor;
         self._minFreq = minFreq;
@@ -385,8 +373,6 @@ class DssgVectorizerCount(DssgVectorizer):
 
         for i in range(len(messageList)):
             msg = messageList[i]['title'] + ' ' + messageList[i]['description'];
-#            msg = messageList[i]['description'];
-#            msg = messageList[i]['title'];
             row = {};
             if (cache != None): unigramList = cache[i];
             else:               unigramList = self._ngramExtractor.extract(msg);
@@ -417,101 +403,17 @@ class DssgVectorizerCount(DssgVectorizer):
     pass
 
 
-class DssgVectorizerTopics(DssgVectorizer):
-    def __init__(self, ngramExtractor, minFreq=1):
-        self._ngramExtractor = ngramExtractor;
-        self._minFreq = minFreq;
-        self._unigramCountDic = {};
-        self._unigramIdxDic = {};
-        self._topicModel = None
-
-    def __repr__(self):
-        return self.__class__.__name__ + '(_ngramExtractor=%s, _minFreq=%s, len(_unigramCountDic)=%d)' % \
-                (repr(self._ngramExtractor), str(self._minFreq), len(self._unigramCountDic))
-
-    def fitTransform(self, messageList):
-        assert(len(self._unigramIdxDic) == 0);
-
-        #- find unigrams
-        unigramCountDic = {};
-        # cache = []
-        cache = range(topic_count)
-
-        # Generate Topic Model from Message List
-        # CREATE TEMP CSV
-            # msg['id'], msg['title'] + ' ' + msg['description']
-            # self._topicModel = pymallet('path/to/csv')
-            # topic_matrix = self._topicModel.generate_topic_weights(topic_count=5)
-        topic_matrix = [[1,.1,.9], [2,.3,.7]]
-        print topic_matrix
-        return
-
-
-        #
-        for msg in messageList: 
-            topic_weights = topic_matrix[message_id][1:] # skip the item, include its topics
-
-            for i in range(len(topic_weights)):
-                unigramCountDic[i] = topic_weights[i]
-
-            unigramList = self._ngramExtractor.extract();
-            cache.append(unigramCountDic.keys()); #topic ids are 0-to-n, where n=topic_count
-
-
-        #- cutoff
-        pairs = unigramCountDic.items()
-        # pairs = filter(lambda x: x[1] >= self._minFreq, pairs);
-
-        unigramCountDic = dict(pairs);
-        unigramList = sorted(unigramCountDic.keys());
-        self._unigramIdxDic =  dict(zip(unigramList, range(len(unigramList))))
-        self._unigramCountDic = unigramCountDic;
-
-        #- transform
-        return self.transform(messageList,cache=cache);
-
-    def transform(self, messageList, cache=None):
-        # TODO: Need to update Pymallet to allow making a "guess" using existing topics on new input
-        pass
-        
-        nUnigram = len(self._unigramIdxDic)
-        rowNum = 0; iList = []; jList = []; valueList = []
-
-        for i in range(len(messageList)):
-            msg = messageList[i]['title'] + ' ' + messageList[i]['description'];
-#            msg = messageList[i]['description'];
-#            msg = messageList[i]['title'];
-            row = {};
-            if (cache != None): unigramList = cache[i];
-            else:               unigramList = self._ngramExtractor.extract(msg);
-
-            for unigram in unigramList:
-                if (unigram in self._unigramIdxDic):
-                    if (unigram not in row): row[unigram] = 1;
-                    else:                    row[unigram] += 1
-            for (k,v) in row.iteritems():
-                iList.append(rowNum);
-                jList.append(self._unigramIdxDic[k]);
-                valueList.append(v);
-
-            rowNum += 1;
-
-        #- this has happened when drawing learning curve due to too small dataset. 
-        nn = len(messageList);
-        if (len(self._unigramIdxDic) == 0):
-            retMat = coo_matrix(([0]*nn, (range(nn), [0]*nn)), shape=(nn, 1));
-        else:
-            retMat = coo_matrix((valueList, (iList, jList)), \
-                    shape=(len(messageList), len(self._unigramIdxDic)));
-        return retMat;
-    
-    def getFeatureNameList(self):
-        return self._unigramIdxDic.keys()
-
-    pass
-
-
 class DssgVectorizerUnigramBySklearn(DssgVectorizer):
+    """
+    Vectorizer that takes in either a DssgUnigramExtractor instance or
+    DssgBigramExtractor instance, and use it to extract a basic token unit.
+    Then, simply counts each tokens to transform to vectors.  In general,
+    "messageList" arguments expect to have 'title' and 'text' as keys, and
+    corresponding content strings as values.                              
+
+    This version is a wrapper of an existing count vectorizer which might
+    invite more junk unigrams.
+    """
     def __init__(self, minFreq=1):
         self._vectorizer = None;
         pass
