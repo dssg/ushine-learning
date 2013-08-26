@@ -1,0 +1,28 @@
+##-- Travis guide for Python projects: 
+##-- http://about.travis-ci.org/docs/user/languages/python/
+language: python
+
+##-- which python version(s)
+python:
+  - "2.7"
+
+##-- set environment variables
+# env:
+#   - EXAMPLE_VAR=1.2.3
+
+##-- install dependencies
+# virtualenv:
+#   system_site_packages: true
+
+before_install:
+ - sudo apt-get install -qq python-numpy python-scipy
+
+install: "pip install -r requirements.txt --use-mirrors"
+
+##-- run tests
+script: nosetests
+
+##-- choose git branches
+branches:
+  only:
+    - master
