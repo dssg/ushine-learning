@@ -16,6 +16,7 @@ import cPickle as pickle
 
 LOCATION_ENTITIES = ['LOCATION', 'GPE', 'GSP']
 
+
 class Machine(object):
 
     """Base class for Machine Learning"""
@@ -37,7 +38,7 @@ class Machine(object):
     @classmethod
     def load(cls, infile=""):
         """
-        Allows the user to import an existing model (e.g. election, 
+        Allows the user to import an existing model (e.g. election,
         natural disaster, etc).
 
         These models will have a set of starting categories, e.g.
@@ -60,7 +61,7 @@ class Machine(object):
 
     def save(self, outfile=""):
         """
-        Allows the user to export the current model (useful after it has been 
+        Allows the user to export the current model (useful after it has been
         trained on new labeled message data)
 
         input: path to the model file
@@ -160,7 +161,7 @@ class Machine(object):
         """
         returns a set of message id's with similarity score, sorted by
         similarity score.
-        
+
         I recommend using >=0.875 to define 'near-dup'.
         :return [('1', 0.9), ('2', 0.8), ...], sorted by the real value
                 (second element of each item) in decreasing order.
@@ -183,7 +184,7 @@ class Machine(object):
 
     @staticmethod
     def guess_language(text):
-        """Returns list of language guesses for the message, 
+        """Returns list of language guesses for the message,
         with confidence measure (0 to 1).
         """
 
@@ -210,7 +211,7 @@ class Machine(object):
     def guess_locations(text):
         """Returns the list of location entities contained in the specified
         text
-        
+
         :param text: the message to be analyzed
         """
         entities = Machine._extract_entities(text)
@@ -221,11 +222,11 @@ class Machine(object):
                 del entities[k]
 
         return entities
-        
+
     #
     @staticmethod
     def guess_private_info(text, **kwargs):
-        """ Returns list of potentially private/sensitive information to 
+        """ Returns list of potentially private/sensitive information to
             consider stripping.
             Output is a list of tuples each containing two parts:
                 * the private information type (PERSON, ID, PHONE, etc.)
@@ -238,7 +239,7 @@ class Machine(object):
             The types of information:
 
             1. Named entities [types: PERSON, GPE, etc.]
-                Note this includes possible locations (GPE), which may be 
+                Note this includes possible locations (GPE), which may be
                 non-private and useful for geolocation
             2. ID numbers (passport, driver's license, etc.) [type: ID]
             3. Usernames (e.g. Twitter handles) [type: USERNAME]
@@ -255,8 +256,8 @@ class Machine(object):
         entities = []
         for entity_type in Machine._extract_entities(text):
             for item in entity_type:
-                entities.append( (entity_type, item) )
-        
+                entities.append((entity_type, item))
+
         return entities + \
             Machine._extract_ids(text) + \
             Machine._extract_usernames(text) + \
@@ -274,7 +275,8 @@ class Machine(object):
                     item = chunk.node, ' '.join(c[0] for c in chunk.leaves())
                     entities_list.append(item)
 
-        # TODO: reconcile different types in guess_private_info and guess_entities / guess_location methods
+        # TODO: reconcile different types in guess_private_info and
+        # guess_entities / guess_location methods
         entities = {}
         for (group, entity) in entities_list:
             if not group in entities:
@@ -296,7 +298,7 @@ class Machine(object):
 
     @staticmethod
     def _extract_usernames(text):
-    # Returns Twitter usernames of form @handle 
+    # Returns Twitter usernames of form @handle
     # (alphanumerical and "_", max length: 15) [tag: USERNAME]
         # twitter_regex = r'\[A-Za-z0-9_]{1,15}'
         twitter_regex = r'^|[^@\w](@\w{1,15})\b'
@@ -420,7 +422,7 @@ class Machine(object):
         return lm
 
     def _filter_labeled_messages(self, lm):
-        """Takes a dictionary and returns a filtered version, using rules 
+        """Takes a dictionary and returns a filtered version, using rules
         specified in filter_fn()
         """
 
@@ -431,7 +433,7 @@ class Machine(object):
             - (near)-identical to a previous message (simhash)
             - message too short (len)
             - message has too few words
-            - message has mixture of languages; not enough English to be 
+            - message has mixture of languages; not enough English to be
                 useful in natural language processing
             """
             message_text = item[0]

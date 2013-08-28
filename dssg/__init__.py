@@ -11,23 +11,24 @@ db = None
 machine = None
 category_classifier = None
 
+
 def load_config(app, config_file):
     """Loads the configuration from the specified file and sets the
     properties of ```app```, ```db``` and ```machine``` application objects
-    
+
     :param app: the flask application object
     :param config_file: the absolute path to the configuration file
     """
     global db, machine, category_classifier
 
     config = ConfigParser.SafeConfigParser()
-    
+
     try:
         config.readfp(open(config_file))
-    except IOError, e:
+    except IOError as e:
         app.logger.error("An error while reading '%s': %s" %
-            (config_file, e.strerror))
-        
+                        (config_file, e.strerror))
+
     # Initialize the database
     try:
         database_uri = config.get('database', 'sqlalchemy.url')
@@ -36,7 +37,7 @@ def load_config(app, config_file):
         # SQLAlchemy configuration
         app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
         app.config['SQLALCHEMY_POOL_SIZE'] = int(pool_size)
-    except ConfigParser.NoSectionError, e:
+    except ConfigParser.NoSectionError as e:
         logger.error("The specified section does not exist", e)
 
     db = SQLAlchemy(app)
@@ -49,11 +50,11 @@ def load_config(app, config_file):
             category_classifier = _dict['categoryClassifier']
             if not isinstance(category_classifier, DssgCategoryClassifier):
                 app.logger.error("Invalid classifier object type: %s" %
-                    type(category_classifier))
+                                 type(category_classifier))
                 category_classifier = None
                 return
             # Proceed
             machine = Machine(category_classifier)
         else:
             app.logger.info("The classifier file '%s' does not exist" %
-                classifier_file)
+                            classifier_file)

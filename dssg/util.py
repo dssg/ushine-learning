@@ -1,45 +1,55 @@
-import csv, codecs, cStringIO
-import os, sys
+import csv
+import codecs
+import cStringIO
+import os
+import sys
 import json
 import copy
 import logging
 import cPickle as pickle
 from datetime import datetime
 
-FORMAT = '%(levelname)s: %(message)s';
+FORMAT = '%(levelname)s: %(message)s'
 logging.basicConfig(format=FORMAT, stream=sys.stdout, level=logging.INFO)
 
 uchaguziPath = 'data/processed/uchaguzi/uchaguzi-message_with_category_list.csv'
 uchaguziJsonPath = 'data/processed/uchaguzi_new.json'
 uchaguziCategoryJsonPath = 'data/processed/uchaguzi_new_categories.json'
 
-################################################################################
+#
 # Pickle
-################################################################################
+#
+
 
 def loadPickle(fileName):
     """ Load a pickle file. """
     return load_pickle(fileName)
 
+
 def load_pickle(fileName):
     """ Load a pickle file. """
     with open(fileName, 'rb') as f:
-        varDic = pickle.load(f);
-    return varDic;
+        varDic = pickle.load(f)
+    return varDic
+
 
 def savePickle(var, fileName, protocol=0):
     """ Saves a pickle file """
-    f = open(fileName, 'wb');
-    pickle.dump(var, f, protocol=protocol);
-    f.close();
+    f = open(fileName, 'wb')
+    pickle.dump(var, f, protocol=protocol)
+    f.close()
 
-################################################################################
+#
 # for CSV
-################################################################################
+#
+
+
 class UTF8Recoder:
+
     """
     Iterator that reads an encoded stream and reencodes the input to UTF-8
     """
+
     def __init__(self, f, encoding):
         self.reader = codecs.getreader(encoding)(f)
 
@@ -49,7 +59,9 @@ class UTF8Recoder:
     def next(self):
         return self.reader.next().encode("utf-8")
 
+
 class UnicodeReader:
+
     """
     A CSV reader which will iterate over lines in the CSV file "f",
     which is encoded in the given encoding.
@@ -66,7 +78,9 @@ class UnicodeReader:
     def __iter__(self):
         return self
 
+
 class UnicodeWriter:
+
     """
     A CSV writer which will write rows to CSV file "f",
     which is encoded in the given encoding.
@@ -95,6 +109,7 @@ class UnicodeWriter:
         for row in rows:
             self.writerow(row)
 
+
 def UnicodeDictReader(utf8_data, **kwargs):
     """
     DictReader that works with unicode.
@@ -103,9 +118,9 @@ def UnicodeDictReader(utf8_data, **kwargs):
     for row in csv_reader:
         yield dict([(key, unicode(value, 'utf-8')) for key, value in row.iteritems()])
 
-################################################################################
+#
 # utiliti functions
-################################################################################
+#
 
 
 def tic():
@@ -114,16 +129,19 @@ def tic():
     returns handle of the time start point.
     """
     global gStartTime
-    gStartTime = datetime.utcnow();
+    gStartTime = datetime.utcnow()
     return gStartTime
+
 
 def toc(prev=None):
     """
     Get a timestamp in seconds. Time interval is from previous call of tic() to current call of toc().
     You can optionally specify the handle of the time ending point.
     """
-    if prev==None: prev = gStartTime;
-    return (datetime.utcnow() - prev).total_seconds();
+    if prev is None:
+        prev = gStartTime
+    return (datetime.utcnow() - prev).total_seconds()
+
 
 def unicodeToAscii(unicodeStr):
     """
@@ -134,12 +152,13 @@ def unicodeToAscii(unicodeStr):
     s = copy.copy(unicodeStr)
     while True:
         try:
-            ret = codecs.encode(s, 'ascii');
-            return ret;
+            ret = codecs.encode(s, 'ascii')
+            return ret
         except UnicodeEncodeError as e:
-            s = s.replace(e.object[e.start:e.end], ' ');
-    return None;
-  
+            s = s.replace(e.object[e.start:e.end], ' ')
+    return None
+
+
 def loadIncidentListFromCsv(path):
     """
     DEPRECATED
@@ -148,56 +167,60 @@ def loadIncidentListFromCsv(path):
     duplicates. Duplicates are not meaningful and should be removed, but I
     simply did not remove them in this function.
     """
-    incidentList = [];
-    with open(path,'r') as fp:
+    incidentList = []
+    with open(path, 'r') as fp:
         reader = csv.reader(fp, delimiter=';', quotechar='"')
-        bFirstLine = True;
+        bFirstLine = True
         for row in reader:
-            if (bFirstLine): # skip the first line
-                bFirstLine=False;
-                continue;
-            assert(len(row) == 4);
-            incidentId = int(row[0]);
-            message = row[1];
-            ### Note that there are duplicates.
+            if (bFirstLine):  # skip the first line
+                bFirstLine = False
+                continue
+            assert(len(row) == 4)
+            incidentId = int(row[0])
+            message = row[1]
+            # Note that there are duplicates.
             categoryIdList = map(lambda x: int(x), row[2].split(','))
             categoryTitleList = map(lambda x: x.strip(), row[3].split(','))
-            assert(len(categoryIdList) == len(categoryTitleList));
-   
+            assert(len(categoryIdList) == len(categoryTitleList))
+
             incidentList.append([incidentId, message, categoryIdList,
-                categoryTitleList])
+                                 categoryTitleList])
     return incidentList
+
 
 def getFullMessagesFromJson(path):
     """
-    Read JSON report data from path. 
+    Read JSON report data from path.
     """
-    with open(path,'r') as fp:
+    with open(path, 'r') as fp:
         data = json.load(fp)
         messageList = []
-        keyList = sorted(data.keys()) #- sort by keys.
+        keyList = sorted(data.keys())  # - sort by keys.
         for k in keyList:
-            v = data[k];
-            v[u'id'] = k;
-            messageList.append(v);
-        return messageList;
+            v = data[k]
+            v[u'id'] = k
+            messageList.append(v)
+        return messageList
+
 
 def countTruth(boolFunc, aList):
-    """ 
+    """
     Counts the number of `True` value when applied `boolFunc` to each element in
     `aList`
     """
-    return len(filter(boolFunc, aList));
+    return len(filter(boolFunc, aList))
+
 
 def isAllNumbers(aStr):
     """
     Returns True if `aStr` consists of all numbers
     """
-    aStr = aStr.strip();
-    if (len(aStr) == countTruth(lambda x: x>='0' and x <= '9', aStr)):
-        return True;
+    aStr = aStr.strip()
+    if (len(aStr) == countTruth(lambda x: x >= '0' and x <= '9', aStr)):
+        return True
     else:
-        return False;
+        return False
+
 
 def loadJsonFromPath(path):
     """
@@ -205,10 +228,12 @@ def loadJsonFromPath(path):
     """
     with open(path, 'r') as fp:
         data = json.load(fp)
-    return data;
+    return data
 
-def getFullMessagesFromUchaguziMergedCategory(uchaguziJsonPath, uchaguziCategoryJsonPath):
-    """ 
+
+def getFullMessagesFromUchaguziMergedCategory(
+        uchaguziJsonPath, uchaguziCategoryJsonPath):
+    """
     DEPRECATED
     """
     messageList = getFullMessagesFromJson(uchaguziJsonPath)
@@ -222,52 +247,54 @@ def getFullMessagesFromUchaguziMergedCategory(uchaguziJsonPath, uchaguziCategory
         msg['categories'] = list(set(categories))
 
     #--- these are selected categories. let's transform
-    selectedCategories = [('parent', 'Counting + Results'),\
-                          ('parent', 'Fear and Tension'),\
-                          ('parent', 'POSITIVE EVENTS'),\
-                          ('parent', 'Polling Station Administration'),\
-                          ('parent', 'Security Issues'),\
-                          ('parent', 'Staffing Issues'),\
-                          ('parent', 'Voting Issues'),\
-                          ('leaf',   'Resolved'),\
-                          ('leaf',   'Unresolved')]
+    selectedCategories = [('parent', 'Counting + Results'),
+                          ('parent', 'Fear and Tension'),
+                          ('parent', 'POSITIVE EVENTS'),
+                          ('parent', 'Polling Station Administration'),
+                          ('parent', 'Security Issues'),
+                          ('parent', 'Staffing Issues'),
+                          ('parent', 'Voting Issues'),
+                          ('leaf', 'Resolved'),
+                          ('leaf', 'Unresolved')]
 
-    categories = loadJsonFromPath(uchaguziCategoryJsonPath);
-    categoryByName = dict( [(cat['category_title'], cat) for cat in categories])
-    categoryById = dict( [(cat['id'], cat) for cat in categories]) 
+    categories = loadJsonFromPath(uchaguziCategoryJsonPath)
+    categoryByName = dict([(cat['category_title'], cat) for cat in categories])
+    categoryById = dict([(cat['id'], cat) for cat in categories])
 
     #--- create mappings
     catMap = {}
     for selectedCat in selectedCategories:
-        catType = selectedCat[0]; catName = selectedCat[1];
-        id = categoryByName[catName]['id'];
+        catType = selectedCat[0]
+        catName = selectedCat[1]
+        id = categoryByName[catName]['id']
         if (catType == 'parent'):
             #- find all categories that falls below it, or itself.
             for item in categories:
                 if (item['parent_id'] == id or item['id'] == id):
-                    catMap[item['category_title']] = catName;
+                    catMap[item['category_title']] = catName
         elif (catType == 'leaf'):
             catMap[catName] = catName
         else:
-            assert false;   
-    
-    logging.info('Constructed mapping');
+            assert false
+
+    logging.info('Constructed mapping')
 
     #--- apply mappings
-    ignoredLabelSet = set();
+    ignoredLabelSet = set()
     for msg in messageList:
         labelList = msg['categories']
-        newLabelSet = set();
+        newLabelSet = set()
         for label in labelList:
             if (label in catMap):
                 newLabelSet.add(catMap[label])
             else:
-                ignoredLabelSet.add(label);
-        msg['categories'] = list(newLabelSet);
+                ignoredLabelSet.add(label)
+        msg['categories'] = list(newLabelSet)
 
-    logging.info('Ignored labels: %s', str(ignoredLabelSet));
+    logging.info('Ignored labels: %s', str(ignoredLabelSet))
 
-    return messageList;
+    return messageList
+
 
 def loadDatasetWithMappedCategories(dsetJsonPath, mappedCategoryPath):
     """
@@ -277,29 +304,28 @@ def loadDatasetWithMappedCategories(dsetJsonPath, mappedCategoryPath):
     #---- read dataset
     messageList = getFullMessagesFromJson(dsetJsonPath)
     for msg in messageList:
-        msg['categories'] = list(set(msg['categories']));
+        msg['categories'] = list(set(msg['categories']))
 
     #---- read mappedCategory
-    catMap = {};
+    catMap = {}
     with open(mappedCategoryPath, 'rb') as inf:
-        csvReader = UnicodeDictReader(inf);
+        csvReader = UnicodeDictReader(inf)
         #headers = csvReader.fieldnames;
         for row in csvReader:
-            #json.json.dumps(row)
+            # json.json.dumps(row)
             engCat = row['Category (English)']
             superCat = row['Super Category']
-            assert ( superCat != None and superCat != '');
-            catMap[engCat] = superCat;
+            assert (superCat is not None and superCat != '')
+            catMap[engCat] = superCat
 
     #---- apply mapping
     for msg in messageList:
         catList = msg['categories']
-        newCatSet = set();
+        newCatSet = set()
         for cat in catList:
-            mappedCat = catMap[cat];
+            mappedCat = catMap[cat]
             if (mappedCat not in ['Other', '?']):
-                newCatSet.add(mappedCat);
+                newCatSet.add(mappedCat)
         msg['categories'] = list(newCatSet)
 
-    return messageList;
-
+    return messageList
