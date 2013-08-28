@@ -665,10 +665,7 @@ class DssgCategoryClassifier(object):
                     binaryClassifier.train(dset)
 
             #- report vocabulary
-            if (isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveInterpolation) or
-                isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveSVC) or
-                isinstance(binaryClassifier, DssgBinaryClassifierMajorityVote)
-                ):
+            if (isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveInterpolation) or isinstance(binaryClassifier, DssgBinaryClassifierAdaptiveSVC) or isinstance(binaryClassifier, DssgBinaryClassifierMajorityVote)):
                 logger.info(
                     '  Can\'t get nVoca since the classifier is: %s',
                     repr(binaryClassifier))

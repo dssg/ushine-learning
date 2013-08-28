@@ -77,8 +77,7 @@ def add_deployment():
         - deployment name
         - list of categories; <id, name> for each category
     """
-    if not request.json and \
-        ('name' not in request.json or 'url' not in request.json):
+    if not request.json and ('name' not in request.json or 'url' not in request.json):
         abort(400)
     name, url = request.json['name'], request.json['url']
 
