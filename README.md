@@ -37,11 +37,17 @@ Works how. Serves recommendations in response to POST requests.
 
 ### **Ushahidi Plugin, for deployment on an Ushahidi crowdmap instance**
 
-Location: https://github.com/ekala/Ushahidi_Web/tree/dssg-integration
+Location: [dssg-integration](https://github.com/ekala/Ushahidi_Web/tree/dssg-integration)
 
 This is a PHP plugin that for he Ushahidi platform. Note: this plugin requires some core changes into the Ushahidi platform in order to show its results. We hope these changes will be incorporated into Ushahidi 2.x and 3.0.
 
 It functions by running the **Flask Webapp** on a server and making REST calls to the `rest_api`. These access the toolkit and machine learning functionality we provide. There is also a SQLAlchemy database that mirrors the important information from the Ushahidi app which we need for (1) updating the classifer and (2) detecting duplicate messages.
+
+### **Experiment**
+
+Location: [ushine-learning-experiment](https://github.com/nathanleiby/ushine-learning-experiment)
+
+This is a JavaScript application, built using NodeJS. It was used to evaluate the impact of machine suggestions on human performance (speed, accuracy, frustration). Note that "machine-suggested" answers in the the JSON of messages was generated using this repo's `machine` class.
 
 ## Installation Guide
 
