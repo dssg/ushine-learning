@@ -32,6 +32,13 @@ def test_canExtractUrls():
     _helper_canExtractX(text, extract_fn, expected)
 
 
+def test_canExtractEntityGroups():
+    text = "My name is Indigo Montoya. I am from the Congo."
+    extract_fn = Machine._extract_entity_groups
+    expected = ['PERSON', 'GSP']
+    _helper_canExtractX(text, extract_fn, expected)
+
+
 def test_canExtractEntities():
     text = "My name is Indigo Montoya. I am from the Congo."
     extract_fn = Machine._extract_entities

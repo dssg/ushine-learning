@@ -200,7 +200,7 @@ class Machine(object):
             - confidence
         """
 
-        entities = Machine._extract_entities(text)
+        entities = Machine._extract_entity_groups(text)
         for e in LOCATION_ENTITIES:
             if e in entities:
                 del entities[e]
@@ -214,7 +214,7 @@ class Machine(object):
 
         :param text: the message to be analyzed
         """
-        entities = Machine._extract_entities(text)
+        entities = Machine._extract_entity_groups(text)
         location_entity_set = set(LOCATION_ENTITIES)
         entity_keys = entities.keys()
         for k in entity_keys:
@@ -254,7 +254,7 @@ class Machine(object):
             phone_regex = kwargs["phone_regex"]
 
         entities = []
-        for entity_type in Machine._extract_entities(text):
+        for entity_type in Machine._extract_entity_groups(text):
             for item in entity_type:
                 entities.append((entity_type, item))
 
@@ -266,17 +266,10 @@ class Machine(object):
             Machine._extract_phones(text, phone_regex)
 
     @staticmethod
-    def _extract_entities(text):
-    # Returns named entities [tags: PERSON, GPE, etc.]
-        entities_list = []
-        for sent in nltk.sent_tokenize(text):
-            for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
-                if hasattr(chunk, 'node'):
-                    item = chunk.node, ' '.join(c[0] for c in chunk.leaves())
-                    entities_list.append(item)
+    def _extract_entity_groups(text):
+        """Returns named entities, organized into groups within a dictionary [tags: PERSON, GPE, etc.]"""
+        entities_list = Machine._extract_entities(text)
 
-        # TODO: reconcile different types in guess_private_info and
-        # guess_entities / guess_location methods
         entities = {}
         for (group, entity) in entities_list:
             if not group in entities:
@@ -284,6 +277,17 @@ class Machine(object):
             entities[group].add(entity)
 
         return entities
+
+    @staticmethod
+    def _extract_entities(text):
+        # Returns named entities [tags: PERSON, GPE, etc.]
+        entities_list = []
+        for sent in nltk.sent_tokenize(text):
+            for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+                if hasattr(chunk, 'node'):
+                    item = chunk.node, ' '.join(c[0] for c in chunk.leaves())
+                    entities_list.append(item)
+        return entities_list
 
     @staticmethod
     def _extract_ids(text):
