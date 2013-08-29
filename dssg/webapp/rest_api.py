@@ -310,11 +310,20 @@ def suggest_locations():
     annotators to geolocate.
 
     input: full message's text [string]
-    output: list. each item is a python dictionary:
-        - text : the text for the specific entity [string]
-        - indices : tuple of (start [int], end [int]) offset where entity is
-          located in given full message
-        - confidence : probability from 0-to-1 [float]
+    output: dict of with outer key "locations". inner keys are entity types, with list of entities.
+
+        "locations": {
+          "GSP": [
+            "Congo"
+          ]
+        }
+
+    # [TODO]
+    # output: list. each item is a python dictionary:
+    #     - text : the text for the specific entity [string]
+    #     - indices : tuple of (start [int], end [int]) offset where entity is
+    #       located in given full message
+    #     - confidence : probability from 0-to-1 [float]
     """
     if not request.json and not 'text' in request.json:
         abort(400)
