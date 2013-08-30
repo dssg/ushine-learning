@@ -9,6 +9,8 @@ from dssg.webapp import app
 similarity_threshold = 0.875
 max_similar_messages = 5
 
+API_VERSION = '1'
+
 
 def verify_deployment(deployment_id):
     """Verifies that the speicifed deployment exists
@@ -55,7 +57,7 @@ def compute_similarities(text, models, count=None):
     return retval
 
 
-@app.route('/v1/language', methods=['POST'])
+@app.route('/v' + API_VERSION + '/language', methods=['POST'])
 def detect_language():
     """Given some text, returns a ranked list of likey natural languages
     the given content is in
@@ -70,7 +72,7 @@ def detect_language():
     return jsonify({'language': language[0], "confidence": language[1]})
 
 
-@app.route('/v1/deployments', methods=['POST'])
+@app.route('/v' + API_VERSION + '/deployments', methods=['POST'])
 def add_deployment():
     """Registers a new Ushahidi deployment. The following information
     should be included in the request
@@ -106,8 +108,9 @@ def add_deployment():
     return jsonify(deployment.as_dict())
 
 
-@app.route('/v1/deployments/<int:deployment_id>/suggest_categories',
-           methods=['POST'])
+@app.route(
+    '/v' + API_VERSION + '/deployments/<int:deployment_id>/suggest_categories',
+    methods=['POST'])
 def suggest_categories(deployment_id):
     """Given a message/report, suggests the possible categories
     that the message could fall into
@@ -127,7 +130,7 @@ def suggest_categories(deployment_id):
     return jsonify({'categories': categories})
 
 
-@app.route('/v1/deployments/<int:deployment_id>/messages', methods=['POST'])
+@app.route('/v' + API_VERSION + '/deployments/<int:deployment_id>/messages', methods=['POST'])
 def add_message(deployment_id):
     """Adds a new message for the deployment in :deployment_id
 
@@ -156,8 +159,10 @@ def add_message(deployment_id):
     return jsonify(message.as_dict())
 
 
-@app.route('/v1/deployments/<int:deployment_id>/messages/<int:message_id>',
-           methods=['DELETE'])
+@app.route(
+    '/v' + API_VERSION +
+    '/deployments/<int:deployment_id>/messages/<int:message_id>',
+    methods=['DELETE'])
 def delete_message(deployment_id, message_id):
     """Deletes the message with the specified :message_id from
     the deployment specified by the ``deployment_id`` parameter
@@ -173,7 +178,7 @@ def delete_message(deployment_id, message_id):
     message.delete()
 
 
-@app.route('/v1/deployments/<int:deployment_id>/similar', methods=['POST'])
+@app.route('/v' + API_VERSION + '/deployments/<int:deployment_id>/similar', methods=['POST'])
 def similar_messages(deployment_id):
     """
     Given text, finds the near duplicate messages. The duplicate messages
@@ -202,7 +207,7 @@ def similar_messages(deployment_id):
     return jsonify(messages)
 
 
-@app.route('/v1/deployments/<int:deployment_id>/reports',
+@app.route('/v' + API_VERSION + '/deployments/<int:deployment_id>/reports',
            methods=['POST'])
 def add_report(deployment_id):
     """Adds a new report to the deployment specified by the ``deployment_id``
@@ -272,8 +277,10 @@ def add_report(deployment_id):
     return jsonify(report.as_dict())
 
 
-@app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
-           methods=['DELETE'])
+@app.route(
+    '/v' + API_VERSION +
+    '/deployments/<int:deployment_id>/reports/<int:report_id>',
+    methods=['DELETE'])
 def delete_report(deployment_id, report_id):
     """Deletes the report with the specified ``report_id`` from the
     deployment referenced by the :deployment_id parameter
@@ -289,8 +296,10 @@ def delete_report(deployment_id, report_id):
     report.delete()
 
 
-@app.route('/v1/deployments/<int:deployment_id>/reports/<int:report_id>',
-           methods=['PATCH'])
+@app.route(
+    '/v' + API_VERSION +
+    '/deployments/<int:deployment_id>/reports/<int:report_id>',
+    methods=['PATCH'])
 def modify_report(deployment_id, report_id):
     """Modifies the report with the specified :report_id. This report
     must belong to the deployment with the specified :deployment_id
@@ -303,7 +312,7 @@ def modify_report(deployment_id, report_id):
     pass
 
 
-@app.route('/v1/locations', methods=['POST'])
+@app.route('/v' + API_VERSION + '/locations', methods=['POST'])
 def suggest_locations():
     """
     Suggest locations in a text string. These might be useful keywords for
@@ -336,7 +345,7 @@ def suggest_locations():
     return jsonify({'locations': entities})
 
 
-@app.route('/v1/entities', methods=['POST'])
+@app.route('/v' + API_VERSION + '/entities', methods=['POST'])
 def extract_entities():
     """Given some text input, identify - besides location - people,
     organisations and other types of entities within the text"""
@@ -353,7 +362,7 @@ def extract_entities():
     return jsonify({'entities': entities})
 
 
-@app.route('/v1/private_info', methods=['POST'])
+@app.route('/v' + API_VERSION + '/private_info', methods=['POST'])
 def suggest_sensitive_info():
     """
     Suggest personally identifying information (PII) -- such as
@@ -378,8 +387,9 @@ def suggest_sensitive_info():
     return jsonify({'private_info': private_info})
 
 
-@app.route('/v1/deployments/<int:deployment_id>/similar_reports',
-           methods=['POST'])
+@app.route(
+    '/v' + API_VERSION + '/deployments/<int:deployment_id>/similar_reports',
+    methods=['POST'])
 def similar_reports(deployment_id):
     if not request.json or not 'text' in request.json:
         abort(400)
