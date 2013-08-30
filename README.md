@@ -10,7 +10,9 @@ In **crisis situations** like contested elections, natural disasters, and troubl
 
 **Crowdsourced crisis reporting platforms**, like [Ushahidi](ushahidi.com) and others, aim to narrow this information gap. They provide centralized software to **collect, curate, and publish reports** coming from the ground.
 
-<TODO: ![Ushahidi Logo](http://www.no-straight-lines.com/wp-content/uploads/2013/01/logo_ushahidi.png)>
+<!-- 
+TODO: ![Ushahidi Logo](http://www.no-straight-lines.com/wp-content/uploads/2013/01/logo_ushahidi.png) 
+-->
 
 Currently, each report is processed prior to publication by a human reviewer who ensures the quality of the report. This human process is slow and tedious. It also may require domain expertise and be inconsistent across reviewers.It is difficult to scale, and requires more volunteers to handle an increasing number and rate of incoming reports.
 
@@ -25,15 +27,23 @@ There are multiple components to the project:
 
 ### **Machine Learning module**
 
-Lives where.
+Location: `dssg` directory. 
 
-Works how. 
+`machine.py` is the core class. A `machine` has methods which enable
+
+- suggesting categories
+- suggesting locations 
+- suggesting entities (person names, political groups, and more)
+- detecting language
+- detecting near-duplicate messages
+
+The other files in this directory (`classifier.py`, `vectorizer.py`, and `platt.py`) are the classes which compose the classifier and allow category prediction. The underlying algorithm is a support vector machine, which is extensively documented in the wiki.
 
 ### **Flask Webapp**
 
-Lives where.
+Location: `server.py` and `dssg/webapp/rest_api.py` are the principal files run and define the webapp.
 
-Works how. Serves recommendations in response to POST requests.
+The webapp serves recommendations in response to POST requests, via REST. It also saves a local copy of much of the data, via SQLAlchemy.
 
 ### **Ushahidi Plugin, for deployment on an Ushahidi crowdmap instance**
 
@@ -52,24 +62,40 @@ This is a JavaScript application, built using NodeJS. It was used to evaluate th
 ## Installation Guide
 
 First you will need to clone the repo. 
-````
+
+```
 git clone https://github.com/dssg/ushine-learning
 cd ushine-learning/
-````
+```
 
+<!--
 ### Python Package installation
 
 `pip install ushine-learning`
+-->
 
-### Webapp Installation
+### Webapp Deployment
 
 *How To Run The Flask Web App*
 
-````
-...
-````
+Create a config file.
 
-To deploy the webapp, use [Gunicorn](http://gunicorn.org/) & [nginx](http://nginx.org/).
+```
+cp dssg/config/dssg.ini.template dssg/config/dssg.ini
+```
+
+Edit the `dssg/config/dssg.ini` config file with 
+- database settings 
+- path to classifier, which is stored as a pickled Python object (`/path/to/classifer.pkl`), e.g. in the `dssg/data/classifier` directory.
+
+Then, run the webapp. You can run it directly via
+
+```
+python server.py
+```
+
+To deploy the webapp in production, we suggest using [Gunicorn](http://gunicorn.org/) & [nginx](http://nginx.org/).
+
 
 ## Contributing to the project
 To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues).
@@ -92,17 +118,11 @@ sphinx-apidoc -o doc/source dssg # -f to overwrite
 
 _Optionally: update the doc/source files directly_
 
-_Finally, 
-
-make HTML (from `docs/` path, where makefile resides)
+_Finally, make HTML (from `docs/` path, where makefile resides)_
  
 ```
 make html
 ```
-
-### Setup
-
-1. Add your secret key in `server.py`
 
 ## License 
 
