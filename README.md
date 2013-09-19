@@ -34,47 +34,16 @@ This reduces the number of reviewers needed, and lessens the time and tedium the
 
 The project has 4 major pieces. The **Machine Learning Module**, **Flask Webapp**, and **Ushahidi Plugin** make up the system's architecture. The **User Experiment** is an important part of our methodology: experimental validation of our results by testing with real users.
 
-At the base is a Python **(1) Machine Learning Module** which learns from a corpus of labeled reports and provides automated suggested labels for novel reports. This component needs to have a way to communicate with Ushahidi, a web platform, so we've created a **(2) Flask Webapp** which which wraps the Machine Learning module and can communicate with an Ushahidi server. The Flask Webapp, at a high-level, _receives reports_ from and _sends suggestions_ to Ushahidi, using a REST-ful API and JSON objects. But the truth is that we don't talk directly to a vanilla Ushahidi; instead, we talk to an **(3) Ushahidi Plugin**. This plugin is written in PHP and deeply connected with the Ushahidi platform. It provides to glue to send and receive on the Ushahidi side.
+At the base is a Python **(1) Machine Learning Module** which learns from a corpus of labeled reports and provides automated suggested labels for novel reports. This component needs to have a way to communicate with Ushahidi, a web platform, so we've created a **(2) Flask Webapp** which which wraps the Machine Learning module and can communicate with an Ushahidi server. The Flask Webapp, at a high-level, _receives reports_ from and _sends suggestions_ to Ushahidi, using a REST-ful API and JSON objects. But the truth is that we don't talk directly to a vanilla Ushahidi; instead, we talk to an **(3) Ushahidi Plugin** deployed on a Crowdmap instance. This plugin is written in PHP and connected with the Ushahidi Crowdmap. It provides to glue to send and receive on the Ushahidi side. (Note: this plugin requires some core changes into the Ushahidi platform in order to show its results. We hope these changes will be incorporated into Ushahidi 2.x and 3.0.)
 
-The **(4) User Experiment** was made to test our impact on real users. Without real users, we could evaluate the accuracy of our algorithms on test data. However, the scenarios and outcomes that concerned us most were proving that we improved from "before" (no suggestions) to "after" (with machine suggestions) on parameters like: speed, accuracy, and tedium. You can read in detail about this work and our experimental results in the Wiki.
+The **(4) User Experiment** was made to test our impact on real users. Without real users, we could evaluate the accuracy of our algorithms on test data. However, the scenarios and outcomes that concerned us most were proving that we improved from "before" (no suggestions) to "after" (with machine suggestions) on parameters like: speed, accuracy, and frustration. You can read in detail about this work and our experimental results in the Wiki.
 
-Technical details of each of these components follow:
+Technical details of each of these components are linked below.
 
-<!-- Consider linking directly to the README.md files in subfolders -->
-
-### **Machine Learning Module**
-
-Location: `dssg` directory.
-
-`machine.py` is the core class. A `machine` has methods which enable
-
-- suggesting categories
-- suggesting locations
-- suggesting entities (person names, political groups, and more)
-- detecting language
-- detecting near-duplicate messages
-
-The other files in this directory (`classifier.py`, `vectorizer.py`, and `platt.py`) are the classes which compose the classifier and allow category prediction. The underlying algorithm is a support vector machine, which is extensively documented in the wiki.
-
-### **Flask Webapp**
-
-Location: `server.py` runs the webapp and `dssg/webapp/rest_api.py` defines the API.
-
-The webapp serves recommendations in response to POST requests, via REST. It also saves a local copy of much of the data, via SQLAlchemy.
-
-### **Ushahidi Plugin, for deployment on an Ushahidi crowdmap instance**
-
-Location: [dssg-integration](https://github.com/ekala/Ushahidi_Web/tree/dssg-integration)
-
-This is a PHP plugin that for the Ushahidi platform. Note: this plugin requires some core changes into the Ushahidi platform in order to show its results. We hope these changes will be incorporated into Ushahidi 2.x and 3.0.
-
-It functions by running the **Flask Webapp** on a server and making REST calls to the `rest_api`. These access the toolkit and machine learning functionality we provide. There is also a SQLAlchemy database that mirrors the important information from the Ushahidi app which we need for (1) updating the classifer and (2) detecting duplicate messages.
-
-### **User Experiment**
-
-Location: [ushine-learning-experiment](https://github.com/nathanleiby/ushine-learning-experiment)
-
-This is a JavaScript application, built using NodeJS. It was used to evaluate the impact of machine suggestions on human performance (speed, accuracy, frustration). Note that "machine-suggested" answers in the the JSON of messages was generated using this repo's `machine` class.
+1. [Machine Learning Module](https://github.com/dssg/ushine-learning/tree/master/dssg)
+2. [Flask Webapp](https://github.com/dssg/ushine-learning/tree/master/dssg/webapp)
+3. [Ushahidi Plugin](https://github.com/ekala/Ushahidi_Web/tree/dssg-integration)
+4. [User Experiment](https://github.com/nathanleiby/ushine-learning-experiment)
 
 ## Installation Guide
 
@@ -109,7 +78,7 @@ TODO
 
 ### Webapp Deployment
 
-*Configure Database and Classifier*
+*Setup configuration*
 
 Create a config file.
 
@@ -121,7 +90,7 @@ Edit the `dssg/config/dssg.ini` config file with
 - database settings
 - path to classifier, which is stored as a pickled Python object (`/path/to/classifer.pkl`), e.g. in the `dssg/data/classifier` directory.
 
-*Run The Flask Web App*
+*How To Run The Flask Web App*
 
 Then, run the webapp. You can run it directly via
 
