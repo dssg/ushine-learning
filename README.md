@@ -32,7 +32,15 @@ This reduces the number of reviewers needed, and lessens the time and tedium the
 
 ## The Project
 
-The project has 4 major pieces. The **Machine Learning Module**, **Flask Webapp**, and **Ushahidi Plugin** make up the system's architecture. The **User Experiment** is an important part of our methodology: experimental validation of our results by testing with real users.
+Recall that we are concerned with labeling reports, and the steps a report goes through are the following:
+
+1. A "citizen" submits a report to Ushahidi
+2. **NEW**: Ushahidi sends the report to Ushine Learning, which generates suggested labels and returns them to Ushahidi
+3. Ushahidi shows the incoming report to a "admin", who annotates it. **NEW**: Suggested labels can be shown to them to help make their annotation process easier.
+4. The admin applies the final labels and approves the report.
+5. The report, with its labels, is shown on a map to help raise situational awareness.
+
+In order to achieve this workflow, our project has 4 major pieces. The **Machine Learning Module**, **Flask Webapp**, and **Ushahidi Plugin** make up the system's architecture. The **User Experiment** is an important part of our methodology: experimental validation of our results by testing with real users.
 
 At the base is a Python **(1) Machine Learning Module** which learns from a corpus of labeled reports and provides automated suggested labels for novel reports. This component needs to have a way to communicate with Ushahidi, a web platform, so we've created a **(2) Flask Webapp** which which wraps the Machine Learning module and can communicate with an Ushahidi server. The Flask Webapp, at a high-level, _receives reports_ from and _sends suggestions_ to Ushahidi, using a REST-ful API and JSON objects. But the truth is that we don't talk directly to a vanilla Ushahidi; instead, we talk to an **(3) Ushahidi Plugin** deployed on a Crowdmap instance. This plugin is written in PHP and connected with the Ushahidi Crowdmap. It provides to glue to send and receive on the Ushahidi side. (Note: this plugin requires some core changes into the Ushahidi platform in order to show its results. We hope these changes will be incorporated into Ushahidi 2.x and 3.0.)
 
