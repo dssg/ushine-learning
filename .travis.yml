@@ -17,7 +17,9 @@ virtualenv:
 before_install:
  - sudo apt-get install -qq python-numpy python-scipy
 
-install: "pip install -r requirements-travis.txt --use-mirrors"
+install:
+ - "pip install -r requirements-travis.txt --use-mirrors"
+ - sudo mv nltk_data /usr/share/nltk_data
 
 ##-- run tests
 script: nosetests dssg/tests

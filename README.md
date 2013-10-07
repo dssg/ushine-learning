@@ -34,11 +34,11 @@ This reduces the number of reviewers needed, and lessens the time and tedium the
 
 Recall that we are concerned with labeling reports, and the steps a report goes through are the following:
 
-1. A "citizen" submits a report to Ushahidi
-2. **NEW**: Ushahidi sends the report to Ushine Learning, which generates suggested labels and returns them to Ushahidi
-3. Ushahidi shows the incoming report to a "admin", who annotates it. **NEW**: Suggested labels can be shown to them to help make their annotation process easier.
+1. A "citizen" submits a report to Ushahidi.
+2. **NEW**: Ushahidi sends the report to Ushine Learning, which generates suggested labels and returns them to Ushahidi.
+3. Ushahidi shows the incoming report to an "admin", who annotates it. **NEW**: Suggested labels can be shown to the admin to help make their annotation process easier.
 4. The admin applies the final labels and approves the report.
-5. The report, with its labels, is shown on a map to help raise situational awareness.
+5. This report, with its labels, is added to a map of all reports. This map is used to help raise situational awareness.
 
 In order to achieve this workflow, our project has 4 major pieces. The **Machine Learning Module**, **Flask Webapp**, and **Ushahidi Plugin** make up the system's architecture. The **User Experiment** is an important part of our methodology: experimental validation of our results by testing with real users.
 
@@ -76,7 +76,9 @@ Install NTLK dependencies.
 TODO
 ```
 
-<!-- TODO: Can we bundle this up more simply? e.g. just install from PIP onto a fresh serer, it will fetch all the requirements? then have a `cmd` which will run it? That'd be rockin. -->
+<!-- TODO: Can we bundle this up more simply? e.g. just install from PIP onto a fresh serer, it will fetch all the requirements and install NLTK dependencies? then have a `cmd` which will run it? That'd be rockin.
+
+Should work on Ubuntu and Amazon-Linux at a minimum, since these are most likely to host Ushahidi instances. -->
 
 <!--
 ### Python Package installation
@@ -108,10 +110,9 @@ python server.py
 
 To deploy the webapp in production, we suggest using [Gunicorn](http://gunicorn.org/) & [nginx](http://nginx.org/).
 
-
 ## Contributing to the project
 
-To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues).
+To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues). Issues include everything from bugs to new project ideas that we'd like to see happen!
 
 To get in touch, email the team at dssg-ushahidi@googlegroups.com or file a Github issue.
 
