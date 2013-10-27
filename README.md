@@ -73,7 +73,7 @@ pip install -r requirements.txt
 Install NTLK dependencies.
 
 ```
-TODO
+mv nltk_data /usr/share/nltk_data # on unix
 ```
 
 <!-- TODO: Can we bundle this up more simply? e.g. just install from PIP onto a fresh serer, it will fetch all the requirements and install NLTK dependencies? then have a `cmd` which will run it? That'd be rockin.
