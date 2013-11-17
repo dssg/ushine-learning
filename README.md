@@ -7,7 +7,7 @@ This is project is a part of the 2013 [Data Science for Social Good](http://www.
 
 *For a quick and gentle overview of the project, check out our [blog post](http://dssg.io/2013/07/15/ushahidi-machine-learning-for-human-rights.html).*
 
-## Background
+## Background on crisis crowdsourcing
 
 In **crisis situations** like contested elections, natural disasters, and troubling humanitarian situations, there's an _information gap_ between the _providers_ (the voters, disaster survivors, and victims) and the _responders_ (the election monitors, aid organizations, NGOs and journalists).
 
@@ -21,13 +21,13 @@ Currently, each report is processed prior to publication by a human reviewer. Re
 
 The human review process is slow and tedious, may require domain expertise, and may be inconsistent across reviewers. It is difficult to scale and problematic for high-volume or fast-paced reporting situations.
 
-## Solution: Automatic and suggested labels using natural-language processing
+## Solution: annotation suggestions using natural language processing
 
 We use computing to make the review process scale. By using machine learning and natural language processing, we can make initial guesses or automatically extract items which previously had been entirely human-determined (such as categories, location, URL, and sensitive information). With our system, no longer must the reviewers do everything from scratch.
 
 This reduces the number of reviewers needed, and lessens the time and tedium they spend processing. Instead, reviewers can focus their energies on _verifying accuracy_ and _responding_ to the reports-- the parts that really matter.
 
-## The Project
+## Project layout
 
 Recall that we are concerned with labeling reports, and the steps a report goes through are the following:
 
