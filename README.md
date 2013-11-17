@@ -133,7 +133,7 @@ To update the documentation, you may do the following:
 
 
 ## Contributing to the project
-To get involved, please check the [issue tracker](https://github.com/dssg/bikeshare/issues).
+To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues).
 
 To get in touch, email Elena Eneva at elenaeneva@gmail.com.
 
