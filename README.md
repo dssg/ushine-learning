@@ -107,12 +107,6 @@ python server.py
 
 To deploy the webapp in production, we suggest using [Gunicorn](http://gunicorn.org/) & [nginx](http://nginx.org/).
 
-## Contributing to the project
-
-To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues). Issues include everything from bugs to new project ideas that we'd like to see happen!
-
-To get in touch, email the team at dssg-ushahidi@googlegroups.com or file a Github issue.
-
 ## Documentation
 
 The latest documentation is available on [ReadTheDocs](https://ushine-learning.readthedocs.org/en/latest/).
@@ -133,10 +127,10 @@ To update the documentation, you may do the following:
 
 
 ## Contributing to the project
-To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues).
 
-To get in touch, email Elena Eneva at elenaeneva@gmail.com.
+To get involved, please check the [issue tracker](https://github.com/dssg/ushine-learning/issues). Issues include everything from bugs to new project ideas that we'd like to see happen!
 
+To get in touch, email the team at dssg-ushahidi@googlegroups.com or file a Github issue.
 
 ## License
 
