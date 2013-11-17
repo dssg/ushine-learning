@@ -1,14 +1,11 @@
-# Ushine Learning
+# Ushine learning: Smarter crowdsourcing for crisis maps
+<img src="https://raw.github.com/wiki/dssg/ushine-learning/pic/logo_ushahidi.png" width="400px" align="right"/>
 
-Ushine Learning is an API built to support [Ushahidi](ushahidi.com), a crowdsourced crisis reporting platform.
+**Ushine Learning** is a machine learning API built to support [Ushahidi](http://www.ushahidi.com), a crowdsourced crisis reporting platform.
 
-<img src="https://raw.github.com/wiki/dssg/ushine-learning/pic/logo_ushahidi.png" width="400px"/>
+This is project is a part of the 2013 [Data Science for Social Good](http://www.dssg.io) fellowship, in partnership with [Ushahidi](http://www.ushahidi.com/).
 
-Before, as reports arrived to the Ushahidi platform, each report had to be reviewed and labeled by a team of humans in a highly manual process.
-
-Now, it can first be routed to Ushine Learning for computerized detection of language, category, location, potentially sensitive information, and near-duplicate messages.
-
-_This is a [Data Science for Social Good](http://www.dssg.io) project._
+*For a quick and gentle overview of the project, check out our [blog post](http://dssg.io/2013/07/15/ushahidi-machine-learning-for-human-rights.html).*
 
 ## Background
 
