@@ -77,17 +77,7 @@ class Machine(object):
         """
         assert False, "Not implemented yet"
 
-        #-TODO change cleanup codes so it uses dictionary form of message
-# Cleanup training dataset
-#         params = {
-#             'remove_junk_messages' : False,
-#             'use_parent_categories_only' : False,
-#             'remove_duplicate_categories' : False,
-#         }
-#         labeledMessages = self.clean_data(labeledMessages, params)
-
         #--- save to _messages, and compute their hashcodes for simhash
-        #- TODO concatenate title??
         self._messageMap = dict(((v['id'], v) for v in messageList))
         self._simhashList = [(v['id'], simhash(unicodeToAscii(
             v['description']))) for v in messageList]
@@ -143,8 +133,7 @@ class Machine(object):
         output = []
         for msg in messages:
             categories = self._categoryClassifier.predictProba(msg)
-            similarity_computations = self.computeSimilarities(
-                msg)  # TODO change..
+            similarity_computations = self.computeSimilarities(msg)
             similar_messages = [self._messageMap[sc[
                 0]] for sc in similarity_computations if sc[1] > similarity_threshold]
 
@@ -280,7 +269,7 @@ class Machine(object):
 
     @staticmethod
     def _extract_entities(text):
-        # Returns named entities [tags: PERSON, GPE, etc.]
+        """Returns named entities [tags: PERSON, GPE, etc.]"""
         entities_list = []
         for sent in nltk.sent_tokenize(text):
             for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
@@ -291,8 +280,8 @@ class Machine(object):
 
     @staticmethod
     def _extract_ids(text):
-    # Returns tokens that have at least one digit, and is at least four
-    # characters long [tag: ID]
+        """Returns tokens that have at least one digit, and is at least four
+        characters long [tag: ID]"""
         ids_list = []
         for sent in nltk.sent_tokenize(text):
             for word in nltk.word_tokenize(sent):
@@ -302,8 +291,9 @@ class Machine(object):
 
     @staticmethod
     def _extract_usernames(text):
-    # Returns Twitter usernames of form @handle
-    # (alphanumerical and "_", max length: 15) [tag: USERNAME]
+        """Returns Twitter usernames of form @handle
+        (alphanumerical and "_", max length: 15) [tag: USERNAME]
+        """
         # twitter_regex = r'\[A-Za-z0-9_]{1,15}'
         twitter_regex = r'^|[^@\w](@\w{1,15})\b'
         twitter_re = re.compile(twitter_regex)
@@ -314,7 +304,7 @@ class Machine(object):
     # ----------------
     @staticmethod
     def _extract_urls(text):
-    # Returns URLs [tag: URL]
+        """ Returns URLs [tag: URL] """
         url_regex = r'''
                         (?xi)
                             \b
@@ -350,7 +340,7 @@ class Machine(object):
 
     @staticmethod
     def _extract_emails(text):
-        # Returns e-mail addresses [tag: EMAIL]
+        """ Returns e-mail addresses [tag: EMAIL] """
         emails_regex = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}"
         emails_re = re.compile(emails_regex)
         emails_list = [("EMAIL", email) for email in emails_re.findall(text)]
@@ -358,7 +348,7 @@ class Machine(object):
 
     @staticmethod
     def _extract_phones(text, phone_regex=None):
-        # Returns phone numbers, using optional regex [tag: PHONE]
+        """ Returns phone numbers, using optional regex [tag: PHONE] """
 
         if not phone_regex:
             # default phone regex (United States)
@@ -373,16 +363,6 @@ class Machine(object):
         phone_re = re.compile(phone_regex, re.VERBOSE)
         phone_list = [("PHONE", phone) for phone in phone_re.findall(text)]
         return phone_list
-
-#    def guess_then_train(self, messages=[]):
-#        """This is standard operating procedure once the classifier has been running for a bit.
-#        We'll want to make our best a guess and then do incremental training.
-#        :param messages list of messages
-#        """
-#        output = self.guess(messages)
-#        self.train(messages)
-#
-#        return output
 
     def _listify(self, messages):
         """Allow argument to be a string or a list
@@ -518,6 +498,8 @@ class Machine(object):
         return out
 
     def _training_dataset_stats(self, lm):
+        """
+        """
         categories = []
         no_dup_categories = []
         for m in lm:
