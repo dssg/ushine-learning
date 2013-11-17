@@ -7,7 +7,7 @@ This is project is a part of the 2013 [Data Science for Social Good](http://www.
 
 *For a quick and gentle overview of the project, check out our [blog post](http://dssg.io/2013/07/15/ushahidi-machine-learning-for-human-rights.html).*
 
-## Background on crisis crowdsourcing
+## Background: crisis crowdsourcing
 
 In **crisis situations** like contested elections, natural disasters, and troubling humanitarian situations, there's an _information gap_ between the _providers_ (the voters, disaster survivors, and victims) and the _responders_ (the election monitors, aid organizations, NGOs and journalists).
 
@@ -15,13 +15,13 @@ In **crisis situations** like contested elections, natural disasters, and troubl
 
 <img src="https://raw.github.com/wiki/dssg/ushine-learning/pic/ushahidi_450_map.jpg" width="450" height="315" />
 
-## Problem: Human review of reports doesn’t scale
+## The problem: Human review of reports doesn’t scale
 
 Currently, each report is processed prior to publication by a human reviewer. Reviewers needs to go through a series of tasks: translating, finding the location, applying category labels, removing personally-identifying information, and more. Not only do they have to extract information, but they also need to verify its accuracy against what's truly happening on the ground.
 
 The human review process is slow and tedious, may require domain expertise, and may be inconsistent across reviewers. It is difficult to scale and problematic for high-volume or fast-paced reporting situations.
 
-## Solution: annotation suggestions using natural language processing
+## The solution: annotation suggestions using natural language processing
 
 We use computing to make the review process scale. By using machine learning and natural language processing, we can make initial guesses or automatically extract items which previously had been entirely human-determined (such as categories, location, URL, and sensitive information). With our system, no longer must the reviewers do everything from scratch.
 
@@ -126,6 +126,17 @@ To update the documentation, you may do the following:
 ## FAQ
 
 **Why Ushine Learning?** Ushahidi. Machine Learning. Pronounced "oo-sheen".
+
+
+## Team
+![Team](https://raw.github.com/dssg/dssg.github.io/761993c24ea2991170ef64048115cb805f5f13fb/img/people/teams/ushahidi.png)
+
+
+## Contributing to the project
+To get involved, please check the [issue tracker](https://github.com/dssg/bikeshare/issues).
+
+To get in touch, email Elena Eneva at elenaeneva@gmail.com.
+
 
 ## License
 
